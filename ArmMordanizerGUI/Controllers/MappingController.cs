@@ -2,15 +2,21 @@
 using ArmMordanizerGUI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace ArmMordanizerGUI.Controllers
 {
     public class MappingController : Controller
     {
         private ApplicationDbContext _db;
+        //rivate ConnectionDb _connectionDB;
+
+
         public MappingController(ApplicationDbContext db)
         {
             _db = db;
+            //_connectionDB = dbC;
         }
         public IActionResult Index()
         {
@@ -44,16 +50,31 @@ namespace ArmMordanizerGUI.Controllers
 
         public IActionResult MapTable()
         {
+            string cName = "Data Source=192.168.250.57; Initial Catalog=AmmsOnlineCountry;User ID=sa;Password=Online@Ammsdb";
+            SqlConnection con = new SqlConnection(cName);
+
+            DataTable srcObjTable = new DataTable();
+            DataTable desObjTable = new DataTable();
+
+
+            string srcQuery = @"SELECT name,system_type_name FROM sys.dm_exec_describe_first_result_set( N'SELECT * FROM TEMP_RAW_Transaction_1', NULL, 0 )";
+            using (SqlCommand cmd = new SqlCommand(srcQuery, con))
+            {
+                //cmd.Parameters.AddWithValue("@TableName", Tablename);
+
+                con.Open();
+                srcObjTable.Load(cmd.ExecuteReader());
+                con.Close();
+            }
             List<TableColumns> objSourceColumns = new List<TableColumns>();
-            objSourceColumns.Add(new TableColumns { ColumnName = "A", ColumnType = "nvarchar" });
-            objSourceColumns.Add(new TableColumns { ColumnName = "B", ColumnType = "nvarchar" });
-            objSourceColumns.Add(new TableColumns { ColumnName = "C", ColumnType = "nvarchar" });
-            objSourceColumns.Add(new TableColumns { ColumnName = "D", ColumnType = "nvarchar" });
+            foreach (DataRow row in srcObjTable.Rows)
+            {
+                objSourceColumns.Add(new TableColumns { ColumnName = row["name"].ToString(), ColumnType = row["system_type_name"].ToString() });
 
-
+            }
             var objSourceList = objSourceColumns.Select(x => new SelectListItem()
             {
-                Text= x.ColumnName,
+                Text = x.ColumnName,
                 Value = x.ColumnName
             }
             ).ToList();
@@ -61,10 +82,24 @@ namespace ArmMordanizerGUI.Controllers
 
 
             List<TableColumns> objDestinationColumns = new List<TableColumns>();
-            objDestinationColumns.Add(new TableColumns { ColumnName = "A", ColumnType = "nvarchar" });
-            objDestinationColumns.Add(new TableColumns { ColumnName = "B", ColumnType = "nvarchar" });
-            objDestinationColumns.Add(new TableColumns { ColumnName = "C", ColumnType = "nvarchar" });
-            objDestinationColumns.Add(new TableColumns { ColumnName = "D", ColumnType = "nvarchar" });
+            string desQuery = @"SELECT name,system_type_name FROM sys.dm_exec_describe_first_result_set( N'SELECT * FROM TEMP_RAW_Transaction_2', NULL, 0 )";
+            using (SqlCommand cmd = new SqlCommand(desQuery, con))
+            {
+                //cmd.Parameters.AddWithValue("@TableName", Tablename);
+
+                con.Open();
+                desObjTable.Load(cmd.ExecuteReader());
+                con.Close();
+            }
+            foreach (DataRow row in desObjTable.Rows)
+            {
+                objDestinationColumns.Add(new TableColumns { ColumnName = row["name"].ToString(), ColumnType = row["system_type_name"].ToString() });
+
+            }
+            //objDestinationColumns.Add(new TableColumns { ColumnName = "A", ColumnType = "nvarchar" });
+            //objDestinationColumns.Add(new TableColumns { ColumnName = "B", ColumnType = "nvarchar" });
+            //objDestinationColumns.Add(new TableColumns { ColumnName = "C", ColumnType = "nvarchar" });
+            //objDestinationColumns.Add(new TableColumns { ColumnName = "D", ColumnType = "nvarchar" });
 
             var objDestinationList = objDestinationColumns.Select(x => new SelectListItem()
             {
@@ -77,10 +112,10 @@ namespace ArmMordanizerGUI.Controllers
             List<MapTable> objMapList = new List<MapTable>();
             foreach (var objColumn in objDestinationColumns)
             {
-                MapTable mapTable = new MapTable(); 
+                MapTable mapTable = new MapTable();
                 mapTable.sourceColumn = "";
                 mapTable.targetColumn = "";
-                objMapList.Add(mapTable);  
+                objMapList.Add(mapTable);
             }
 
             Mapper mapper = new Mapper();
