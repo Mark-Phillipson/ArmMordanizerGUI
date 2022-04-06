@@ -15,11 +15,12 @@ namespace ArmMordanizerGUI.Service
                 mapTable.targetColumn = "";
                 objMapList.Add(mapTable);
             }
-
+            objMapList.RemoveAt(objMapList.Count-2);
             Mapper mapper = new Mapper();
             mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
             mapper.desTinationSelectList = new SelectList(objDestinationList1, "Text", "Value");
             mapper.mapTables = objMapList;
+            
             return mapper;
         }
     }

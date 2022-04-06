@@ -3,9 +3,27 @@
 @{
     var i = 0;
 }
-@for ( i=0;i< Model.mapTables.Count;i++)
+@for (i = 0; i < Model.mapTables.Count; i++)
 {
-    @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), "Default label", new { @class = "css-class" })
-    @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), "Default label", new { @class = "css-class" })
+    <div class="row pt-12" style="border:dashed;padding-top:10px;">
+        <div class="row pt-6">
+            <div class="col-4">
+                <h2 class="text-primary">Source Column</h2>
+            </div>
+            <div class="col-8">
+                @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), "Source Column", new { @class = "css-class" })
+            </div>
+        </div>
+        <div class="row pt-6">
+            <div class="col-4">
+                <h2 class="text-primary">Destination Column</h2>
+            </div>
+            <div class="col-8">
+                @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), "Destination Colum", new { @class = "css-class " })
+            </div>
+        </div>
+    </div>
+
+
 
 }
