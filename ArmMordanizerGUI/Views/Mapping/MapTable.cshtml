@@ -9,7 +9,7 @@
                     <label class="text-primary">Select Source Table</label>
                 </div>
                 <div class="col-md-8">
-                    @Html.DropDownList("SrcTableName", new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table")
+                    @Html.DropDownList("SrcTableName", new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-control"})
 
                     @*@Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table")
                         @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList),"Select Source Table",new { @class = "form-control", onchange = "document.location.href = '/Mapping/SourceTableddlChange?obj=' + m;" })*@
@@ -41,28 +41,31 @@
         }*@
     <div id="mypartial"> </div>
 
-    <br />
-    <br />
-    <button type="submit" class="btn btn-primary" style="width:150px;">Create</button>
+    
 
 </form>
 
 <script>
-             function SelectedIndexChanged() {
-             //var selectedVal = document.getElementById("SrcTable").value;
-             var a = document.getElementById("SrcTableName").value;
-             var b = document.getElementById("DesTableName").value;
-             //var selectedID = $(this).val();
+            function SelectedIndexChanged() {
+                console.log("Test");
+            //var selectedVal = document.getElementById("SrcTable").value;
+            var a = document.getElementById("SrcTableName").value;
+            var b = document.getElementById("DesTableName").value;
+            console.log(a);
+            console.log(b);
+            //var selectedID = $(this).val();
+            
+                console.log(model);
+   var url = "@Url.Action("MapPartial","Mapping")";
 
-                 console.log(model);
-    var url = "@Url.Action("MapPartial","Mapping")";
+    var model = { SrcTableName :document.getElementById("SrcTableName").value,
+                  DesTableName:document.getElementById("DesTableName").value
+                };
 
-     var model = { SrcTableName :document.getElementById("SrcTableName").value,
-                   DesTableName:document.getElementById("DesTableName").value
-                 };
-
-     $.post(url, model, function(res){
-        $("#mypartial").html(res);
-     });
-
+    $.post(url, model, function(res){
+       //res contains the markup returned by the partial view
+       //You probably want to set that to some Div.
+       $("#mypartial").html(res);
+    });
+            }
 </script>
