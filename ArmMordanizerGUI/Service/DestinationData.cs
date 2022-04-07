@@ -50,5 +50,45 @@ namespace ArmMordanizerGUI.Service
             objDestinationList.Insert(0, new SelectListItem() { Value = "0", Text = "-- Please select your Column --" });
             return objDestinationList;
         }
+
+        internal List<SelectListItem> GetSourceTableInfo()
+        {
+
+            try
+            {
+
+                DataTable desObjTable = new DataTable();
+                string connString = this.Configuration.GetConnectionString("DefaultConnection");
+
+                SqlConnection con = new SqlConnection(connString);
+
+                string srcQuery = @"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
+                using (SqlCommand cmd = new SqlCommand(srcQuery, con))
+                {
+                    //cmd.Parameters.AddWithValue("@TableName", v);
+
+                    con.Open();
+                    desObjTable.Load(cmd.ExecuteReader());
+                    con.Close();
+                }
+                List<string> objDestinationTables = new List<string>();
+                foreach (DataRow row in desObjTable.Rows)
+                {
+                    objDestinationTables.Add(row["TABLE_NAME"].ToString());
+
+                }
+                List<SelectListItem> objDestinationTableList = objDestinationTables.Select(x => new SelectListItem()
+                {
+                    Text = x,
+                    Value = x
+                }
+                ).ToList();
+                return objDestinationTableList;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

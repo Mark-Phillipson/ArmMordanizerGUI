@@ -59,13 +59,56 @@ namespace ArmMordanizerGUI.Controllers
 
 
         public IActionResult MapTable()
-        {            
-            List<SelectListItem> objSourceList = _sourceData.GetSourceData("TEMP_RAW_Transaction_1");
-            List<SelectListItem> objDestinationList = _destinationData.GetDestinationData("TEMP_RAW_Transaction_2");
-
-            Mapper mapper = _mapperData.GetMapper(objDestinationList, objSourceList);
+        {
+            Mapper mapper = new Mapper();
+            mapper.sourcetableSelectList = new SelectList(_sourceData.GetSourceTableInfo(), "Text", "Value");
+            mapper.desTinationTableSelectList = new SelectList(_destinationData.GetSourceTableInfo(), "Text", "Value");
 
             return View(mapper);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult MapTable(Mapper obj)
+        {
+            //    if (obj.mapTables.Count == obj.DisplayOrder.ToString())
+            //    {
+            //        ModelState.AddModelError("Name", "The Display Order cannot exactly match Name. ");
+            //    }
+            //    if (ModelState.IsValid)
+            //    {
+            //        _db.Mappings.Add(obj);
+            //        _db.SaveChanges();
+            //        return RedirectToAction("Index");
+            //    }
+            return View(obj);
+        }
+        public IActionResult DestinationTableddlChange(Mapper obj)
+        {
+            List<SelectListItem> objDestinationList = _destinationData.GetDestinationData(obj.destinationTableName);
+            obj.desTinationSelectList = new SelectList(objDestinationList, "Text", "Value");
+            return View(obj);
+
+        }
+        public IActionResult SourceTableddlChange(Mapper obj)
+        {
+            List<SelectListItem> objSourceList = _sourceData.GetSourceData(obj.sourceTableName);
+            obj.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
+            return View(obj);
+
+        }
+        [HttpPost]
+        public IActionResult MapPartial(string SrcTableName, string desTableName)
+        {
+            
+
+            List<SelectListItem> objDestinationList = _destinationData.GetDestinationData(SrcTableName);
+            List<SelectListItem> objSourceList = _sourceData.GetSourceData(desTableName);
+            Mapper mapper = _mapperData.GetMapper(objDestinationList, objSourceList);
+            mapper.sourceTableName = SrcTableName;
+            mapper.destinationTableName = desTableName; 
+
+
+            return PartialView("~/Views/Shared/_MapPartial.cshtml", mapper);
         }
 
     }
