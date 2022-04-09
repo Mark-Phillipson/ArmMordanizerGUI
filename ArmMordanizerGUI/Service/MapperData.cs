@@ -128,7 +128,31 @@ namespace ArmMordanizerGUI.Service
 
         public List<MapTable> GetConfiguarationData(string srcTableName, string desTableName)
         {
-            throw new NotImplementedException();
+            List<MapTable> list = new List<MapTable>();
+            try
+            {
+                string existingSql;
+                string connString = this.Configuration.GetConnectionString("DefaultConnection");
+
+                SqlConnection con = new SqlConnection(connString);
+
+                string sql = "SELECT SQL FROM MapperConfiguration WHERE SourceTable = @SourceTable AND DestinationTable = @DestinationTable AND IsActive = 1";
+
+                using (SqlCommand cmd = new SqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@SourceTable", srcTableName);
+                    cmd.Parameters.AddWithValue("@DestinationTable", desTableName);
+
+                    con.Open();
+                    existingSql = (string)cmd.ExecuteScalar();
+                    con.Close();
+                }
+                return list;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         internal Mapper GetMapper(List<SelectListItem> objDestinationList, List<SelectListItem> objSourceList, List<MapTable> objMapTable)
