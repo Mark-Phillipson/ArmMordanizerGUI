@@ -24,12 +24,12 @@ namespace ArmMordanizerGUI.Service
                 mapTable.targetColumn = "";
                 objMapList.Add(mapTable);
             }
-            objMapList.RemoveAt(objMapList.Count-2);
+            objMapList.RemoveAt(objMapList.Count - 2);
             Mapper mapper = new Mapper();
             mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
             mapper.desTinationSelectList = new SelectList(objDestinationList1, "Text", "Value");
             mapper.mapTables = objMapList;
-            
+
             return mapper;
         }
 
@@ -61,12 +61,46 @@ namespace ArmMordanizerGUI.Service
             }
             catch (Exception ex)
             {
-                return "Database Insertion failed. Please See the exception Message" + ex.Message.ToString(); 
+                return "Database Insertion failed. Please See the exception Message" + ex.Message.ToString();
             }
-            
-            
 
-            
+
+
+
+        }
+
+        internal bool IsSrcDesExists(string sourceTableName, string destinationTableName)
+        {
+            try
+            {
+                bool isExists;
+                string connString = this.Configuration.GetConnectionString("DefaultConnection");
+
+                SqlConnection con = new SqlConnection(connString);
+
+                string sql = "SELECT COUNT(*) FROM MapperConfiguration WHERE SourceTable = @SourceTable AND DestinationTable = @DestinationTable";
+
+                using (SqlCommand cmd = new SqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@SourceTable", sourceTableName);
+                    cmd.Parameters.AddWithValue("@DestinationTable", destinationTableName);
+
+                    con.Open();
+                    isExists = (bool)cmd.ExecuteScalar();
+                    con.Close();
+                }
+                return isExists;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        internal string? UpdateInsertMappingData(Mapper obj)
+        {
+            throw new NotImplementedException();
         }
 
         private string GetQuery(Mapper obj)
@@ -90,6 +124,40 @@ namespace ArmMordanizerGUI.Service
 
             finalSQL = selectSQl + valuesSql;
             return finalSQL;
+        }
+
+        public List<MapTable> GetConfiguarationData(string srcTableName, string desTableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal Mapper GetMapper(List<SelectListItem> objDestinationList, List<SelectListItem> objSourceList, List<MapTable> objMapTable)
+        {
+            List<MapTable> objMapList = new List<MapTable>();
+            foreach (var objColumn in objMapTable)
+            {
+                MapTable mapTable = new MapTable();
+                mapTable.sourceColumn = objColumn.sourceColumn;
+                mapTable.targetColumn = objColumn.targetColumn;
+                objMapList.Add(mapTable);
+            }
+            if(objDestinationList.Count > objMapList.Count)
+            {
+                for (int i = 0; i < objDestinationList.Count - objMapList.Count; i++)
+                {
+                    MapTable mapTable = new MapTable();
+                    mapTable.sourceColumn = "";
+                    mapTable.targetColumn = "";
+                    objMapList.Add(mapTable);
+                }
+            }
+            objMapList.RemoveAt(objMapList.Count - 2);
+            Mapper mapper = new Mapper();
+            mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
+            mapper.desTinationSelectList = new SelectList(objDestinationList, "Text", "Value");
+            mapper.mapTables = objMapList;
+
+            return mapper;
         }
     }
 }

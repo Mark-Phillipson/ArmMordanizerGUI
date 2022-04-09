@@ -11,6 +11,7 @@ namespace ArmMordanizerGUI.Models
         public SelectList desTinationTableSelectList { get; set; }
         public string sourceTableName { get; set; }
         public string destinationTableName { get; set; }
-
+        public SelectList reUseConfiguration { get; set; }
+        public int reUseValue { get; set; }
     }
 }

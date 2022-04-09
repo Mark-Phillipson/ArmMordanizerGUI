@@ -64,14 +64,37 @@ namespace ArmMordanizerGUI.Controllers
             mapper.sourcetableSelectList = new SelectList(_sourceData.GetSourceTableInfo(), "Text", "Value");
             mapper.desTinationTableSelectList = new SelectList(_destinationData.GetSourceTableInfo(), "Text", "Value");
 
+            List<SelectListItem> reUseData = new List<SelectListItem>();
+            reUseData.Add(new SelectListItem("Yes", "1"));
+            reUseData.Add(new SelectListItem("No", "1"));
+
+            mapper.reUseConfiguration = new SelectList(reUseData, "Text", "Value"); ;
             return View(mapper);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult MapTable(Mapper obj)
         {
-            //string msg = "";
-            string msg = _mapperData.Save(obj);
+            string msg = null;
+            if (obj.reUseValue == 1)
+            {
+                bool isExists = _mapperData.IsSrcDesExists(obj.sourceTableName, obj.destinationTableName);
+                if (!isExists)
+                {
+                    TempData["message"] = "Configuration Data Not Found.";
+                    return RedirectToAction("MapTable", "Mapping");
+                }
+                else
+                {
+                    msg = _mapperData.UpdateInsertMappingData(obj);
+                }
+            }
+            else
+            {
+                msg = _mapperData.Save(obj);
+
+            }
+
             //    if (obj.mapTables.Count == obj.DisplayOrder.ToString())
             //    {
             //        ModelState.AddModelError("Name", "The Display Order cannot exactly match Name. ");
@@ -83,8 +106,7 @@ namespace ArmMordanizerGUI.Controllers
             //        return RedirectToAction("Index");
             //    }
             TempData["message"] = msg;
-            return RedirectToAction("MapTable","Mapping");
-            //return View(obj);
+            return RedirectToAction("MapTable", "Mapping");
         }
         public IActionResult DestinationTableddlChange(Mapper obj)
         {
@@ -101,15 +123,36 @@ namespace ArmMordanizerGUI.Controllers
 
         }
         [HttpPost]
-        public IActionResult MapPartial(string SrcTableName, string desTableName)
+        public IActionResult MapPartial(string SrcTableName, string desTableName, string reUseValue)
         {
-            
-
+            Mapper mapper = new Mapper();
             List<SelectListItem> objDestinationList = _destinationData.GetDestinationData(SrcTableName);
             List<SelectListItem> objSourceList = _sourceData.GetSourceData(desTableName);
-            Mapper mapper = _mapperData.GetMapper(objDestinationList, objSourceList);
-            mapper.sourceTableName = SrcTableName;
-            mapper.destinationTableName = desTableName; 
+
+            string msg = null;
+            if (reUseValue == "1")
+            {
+                bool isExists = _mapperData.IsSrcDesExists(SrcTableName, desTableName);
+                if (!isExists)
+                {
+                    TempData["message"] = "Configuration Data Not Found.";
+                    return RedirectToAction("MapTable", "Mapping");
+                }
+                else
+                {
+                    List<MapTable> objMapTable = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
+                    mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable);
+                    mapper.sourceTableName = SrcTableName;
+                    mapper.destinationTableName = desTableName;
+                }
+            }
+            else
+            {
+                mapper = _mapperData.GetMapper(objDestinationList, objSourceList);
+                mapper.sourceTableName = SrcTableName;
+                mapper.destinationTableName = desTableName;
+            }
+
 
 
             return PartialView("~/Views/Shared/_MapPartial.cshtml", mapper);
