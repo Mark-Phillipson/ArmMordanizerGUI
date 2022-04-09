@@ -23,7 +23,7 @@ namespace ArmMordanizerGUI.Controllers
         {
             _db = db;
             Configuration = _configuration;
-            _mapperData = new MapperData();
+            _mapperData = new MapperData(_configuration);
             _sourceData = new SourceData(_configuration);
             _destinationData = new DestinationData(_configuration);
             //_connectionDB = dbC;
@@ -70,6 +70,8 @@ namespace ArmMordanizerGUI.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult MapTable(Mapper obj)
         {
+            //string msg = "";
+            string msg = _mapperData.Save(obj);
             //    if (obj.mapTables.Count == obj.DisplayOrder.ToString())
             //    {
             //        ModelState.AddModelError("Name", "The Display Order cannot exactly match Name. ");
@@ -80,7 +82,9 @@ namespace ArmMordanizerGUI.Controllers
             //        _db.SaveChanges();
             //        return RedirectToAction("Index");
             //    }
-            return View(obj);
+            TempData["message"] = msg;
+            return RedirectToAction("MapTable","Mapping");
+            //return View(obj);
         }
         public IActionResult DestinationTableddlChange(Mapper obj)
         {

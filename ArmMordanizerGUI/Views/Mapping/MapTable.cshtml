@@ -1,6 +1,9 @@
 ﻿@model Mapper
 
-
+@if (TempData["message"] != null)
+{
+    <script>alert('@TempData["message"]');</script>
+}
 <form method="post">
     <div class="row pt-12" style="padding-bottom:10px; padding-top:10px;">
         <div class="col-md-6">
@@ -9,7 +12,7 @@
                     <label class="text-primary">Select Source Table</label>
                 </div>
                 <div class="col-md-8">
-                    @Html.DropDownList("SrcTableName", new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-control"})
+                    @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-control"})
 
                     @*@Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table")
                         @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList),"Select Source Table",new { @class = "form-control", onchange = "document.location.href = '/Mapping/SourceTableddlChange?obj=' + m;" })*@
@@ -24,7 +27,7 @@
                     <label class="text-primary">Select Destination Table</label>
                 </div>
                 <div class="col-md-8">
-                    @Html.DropDownList("DesTableName", new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-control", onchange = "SelectedIndexChanged()" })
+                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-control", onchange = "SelectedIndexChanged()" })
 
                     @* @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "document.location.href = '/Mapping/DestinationTableddlChange?obj=' + m;" })
                         @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "SelectedIndexChanged" })
@@ -49,8 +52,8 @@
             function SelectedIndexChanged() {
                 console.log("Test");
             //var selectedVal = document.getElementById("SrcTable").value;
-            var a = document.getElementById("SrcTableName").value;
-            var b = document.getElementById("DesTableName").value;
+            var a = document.getElementById("sourceTableName").value;
+            var b = document.getElementById("destinationTableName").value;
             console.log(a);
             console.log(b);
             //var selectedID = $(this).val();
@@ -58,8 +61,8 @@
                 console.log(model);
    var url = "@Url.Action("MapPartial","Mapping")";
 
-    var model = { SrcTableName :document.getElementById("SrcTableName").value,
-                  DesTableName:document.getElementById("DesTableName").value
+    var model = { SrcTableName :document.getElementById("sourceTableName").value,
+                  DesTableName:document.getElementById("destinationTableName").value
                 };
 
     $.post(url, model, function(res){
