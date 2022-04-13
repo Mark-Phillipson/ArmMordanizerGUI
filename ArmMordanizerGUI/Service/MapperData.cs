@@ -10,7 +10,6 @@ namespace ArmMordanizerGUI.Service
 
         public MapperData(IConfiguration _configuration)
         {
-            //_connectionDB = new ConnectionDb();
             Configuration = _configuration;
 
         }
@@ -24,7 +23,7 @@ namespace ArmMordanizerGUI.Service
                 mapTable.targetColumn = "";
                 objMapList.Add(mapTable);
             }
-            objMapList.RemoveAt(objMapList.Count - 2);
+            objMapList.RemoveAt(objMapList.Count - 1);
             Mapper mapper = new Mapper();
             mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
             mapper.desTinationSelectList = new SelectList(objDestinationList1, "Text", "Value");
@@ -51,13 +50,15 @@ namespace ArmMordanizerGUI.Service
                     cmd.Parameters.AddWithValue("@SQL", sql);
                     cmd.Parameters.AddWithValue("@IsActive", 1);
                     cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                    //cmd.Parameters.AddWithValue("@UpdatedDate", null);
+
 
 
                     con.Open();
                     cmd.ExecuteNonQuery();
                     con.Close();
                 }
-                return "Insertion Successfull.";
+                return "Data Saved Successfull.";
             }
             catch (Exception ex)
             {
@@ -86,7 +87,11 @@ namespace ArmMordanizerGUI.Service
                     cmd.Parameters.AddWithValue("@DestinationTable", destinationTableName);
 
                     con.Open();
-                    isExists = (bool)cmd.ExecuteScalar();
+                    int res = (int)cmd.ExecuteScalar();
+                    if (res == 0)
+                        isExists = false;
+                    else
+                        isExists = true;
                     con.Close();
                 }
                 return isExists;
@@ -98,9 +103,57 @@ namespace ArmMordanizerGUI.Service
 
         }
 
-        internal string? UpdateInsertMappingData(Mapper obj)
+        public string UpdateMappingData(Mapper obj)
         {
-            throw new NotImplementedException();
+            string connString = this.Configuration.GetConnectionString("DefaultConnection");
+            string updateSql = "UPDATE MapperConfiguration SET IsActive = 0,UpdatedDate= @UpdatedDate WHERE SourceTable = @SourceTable AND DestinationTable = @DestinationTable";
+            string sql = GetQuery(obj);
+            string insertSql = "INSERT INTO [MapperConfiguration] ([SourceTable],[DestinationTable],[SQL],[IsActive],[CreatedDate]) VALUES (@SourceTable,@DestinationTable,@SQL,@IsActive,@CreatedDate)";
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    using (SqlCommand cmd = new SqlCommand(updateSql, conn, transaction)) 
+                    {
+                        cmd.Parameters.AddWithValue("@SourceTable", obj.sourceTableName);
+                        cmd.Parameters.AddWithValue("@DestinationTable", obj.destinationTableName);
+                        cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
+
+                        cmd.ExecuteNonQuery(); 
+                    }
+                    using (SqlCommand cmd = new SqlCommand(insertSql, conn, transaction))
+                    {
+                        cmd.Parameters.AddWithValue("@SourceTable", obj.sourceTableName);
+                        cmd.Parameters.AddWithValue("@DestinationTable", obj.destinationTableName);
+                        cmd.Parameters.AddWithValue("@SQL", sql);
+                        cmd.Parameters.AddWithValue("@IsActive", 1);
+                        cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+
+                        cmd.ExecuteNonQuery(); 
+                    }
+                    transaction.Commit();
+                    conn.Close();
+                    return "Data Saved Successfull.";
+                }
+                catch (Exception ex)
+                {
+                    // Attempt to roll back the transaction.
+                    try
+                    {
+                        return "Database Insertion failed. Please See the exception Message" + ex.Message.ToString();
+                        transaction.Rollback();
+                    }
+                    catch (Exception ex2)
+                    {
+                        return "Database Insertion failed. Please See the exception Message" + ex.Message.ToString();
+                    }
+                }
+            }
+
         }
 
         private string GetQuery(Mapper obj)
@@ -147,12 +200,39 @@ namespace ArmMordanizerGUI.Service
                     existingSql = (string)cmd.ExecuteScalar();
                     con.Close();
                 }
+                list = GetMapTableInfo(existingSql);
                 return list;
             }
             catch (Exception ex)
             {
                 throw ex;
             }
+        }
+
+        private List<MapTable> GetMapTableInfo(string existingSql)
+        {
+            //INSERT INTO MasterCalendar (Date,Year,HolidayType)  SELECT Date, Year, HolidayType FROM MasterCalendar
+            List<MapTable> mapTableList = new List<MapTable>();
+            string[] data = existingSql.Split(new[] { "SELECT" }, StringSplitOptions.None);
+
+
+            string[] srcTemp = data[0].Split(new[] { "(" }, StringSplitOptions.None);
+            srcTemp[1] = srcTemp[1].Replace("&nbsp;", " ").Replace(")", "").Replace("\r", "").Replace("\n", "");
+            srcTemp = srcTemp[1].Split(new[] { "," }, StringSplitOptions.None);
+
+            string[] desTemp = data[1].Split(new[] { "FROM" }, StringSplitOptions.None);
+            desTemp = desTemp[0].Split(new[] { "," }, StringSplitOptions.None);
+
+            for (int i = 0; i < srcTemp.Length; i++)
+            {
+                MapTable obj = new MapTable();
+                obj.sourceColumn = srcTemp[i].Trim();
+                obj.targetColumn = desTemp[i].Trim();
+                mapTableList.Add(obj);
+            }
+
+            return mapTableList;
+
         }
 
         internal Mapper GetMapper(List<SelectListItem> objDestinationList, List<SelectListItem> objSourceList, List<MapTable> objMapTable)
@@ -165,9 +245,10 @@ namespace ArmMordanizerGUI.Service
                 mapTable.targetColumn = objColumn.targetColumn;
                 objMapList.Add(mapTable);
             }
-            if(objDestinationList.Count > objMapList.Count)
+            int count = objMapList.Count;
+            if (objDestinationList.Count > count)
             {
-                for (int i = 0; i < objDestinationList.Count - objMapList.Count; i++)
+                for (int i = 0; i < objDestinationList.Count - count; i++)
                 {
                     MapTable mapTable = new MapTable();
                     mapTable.sourceColumn = "";
@@ -175,7 +256,7 @@ namespace ArmMordanizerGUI.Service
                     objMapList.Add(mapTable);
                 }
             }
-            objMapList.RemoveAt(objMapList.Count - 2);
+            objMapList.RemoveAt(objMapList.Count - 1);
             Mapper mapper = new Mapper();
             mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
             mapper.desTinationSelectList = new SelectList(objDestinationList, "Text", "Value");

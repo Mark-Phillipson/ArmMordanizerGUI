@@ -47,11 +47,11 @@ namespace ArmMordanizerGUI.Service
                 Value = x.ColumnName
             }
             ).ToList();
-            objDestinationList.Insert(0, new SelectListItem() { Value = "0", Text = "-- Please select your Column --" });
+            objDestinationList.Insert(0, new SelectListItem() { Value = "", Text = "-- Please select your Column --" });
             return objDestinationList;
         }
 
-        internal List<SelectListItem> GetSourceTableInfo()
+        internal List<SelectListItem> GetDestinationTableInfo()
         {
 
             try
@@ -62,7 +62,7 @@ namespace ArmMordanizerGUI.Service
 
                 SqlConnection con = new SqlConnection(connString);
 
-                string srcQuery = @"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
+                string srcQuery = @"SELECT TABLE_NAME,TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES";
                 using (SqlCommand cmd = new SqlCommand(srcQuery, con))
                 {
                     //cmd.Parameters.AddWithValue("@TableName", v);
@@ -74,7 +74,7 @@ namespace ArmMordanizerGUI.Service
                 List<string> objDestinationTables = new List<string>();
                 foreach (DataRow row in desObjTable.Rows)
                 {
-                    objDestinationTables.Add(row["TABLE_NAME"].ToString());
+                    objDestinationTables.Add(String.Concat(row["TABLE_SCHEMA"].ToString(), ".", row["TABLE_NAME"].ToString()));
 
                 }
                 List<SelectListItem> objDestinationTableList = objDestinationTables.Select(x => new SelectListItem()

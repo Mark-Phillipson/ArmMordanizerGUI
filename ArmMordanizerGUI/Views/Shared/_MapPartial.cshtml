@@ -5,27 +5,34 @@
 
 @*    <label>Model.sourceTablename</label>
 *@    @for (i = 0; i < Model.mapTables.Count; i++)
-    {
+{
 
-        <div class="row pt-12" style="border:dashed;padding-top:10px;">
-            <div class="row pt-6">
-                <div class="col-4">
-                    <h2 class="text-primary">Source Column</h2>
-                </div>
-                <div class="col-8">
-                    @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), "Source Column", new { @class = "form-control" })
-                </div>
+    <div class="row pt-12" style="border:dashed;padding-top:10px;">
+        <div class="row pt-6">
+            <div class="col-4">
+                <h2 class="text-primary">Source Column</h2>
             </div>
-            <div class="row pt-6">
-                <div class="col-4">
-                    <h2 class="text-primary">Destination Column</h2>
-                </div>
-                <div class="col-8">
-                    @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), "Destination Colum", new { @class = "form-control" })
-                </div>
+            <div class="col-8">
+                @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new { @class = "form-control" })
             </div>
         </div>
-    }
-    <br />
-    <br />
+        <div class="row pt-6">
+            <div class="col-4">
+                <h2 class="text-primary">Destination Column</h2>
+            </div>
+            <div class="col-8">
+                @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), new { @class = "form-control" })
+            </div>
+        </div>
+    </div>
+}
+<br />
+<br />
+@if (Model.mapTables.Count == 0)
+{
+    <h2 class="text-warning"><b>Configuration data not found. Please select Re Use option "NO" to insert data first.</b></h2>
+}
+@if (Model.mapTables.Count > 0)
+{
     <button type="submit" class="btn btn-primary" style="width:150px;">Create</button>
+}

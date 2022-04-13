@@ -47,7 +47,7 @@ namespace ArmMordanizerGUI.Service
                     Value = x.ColumnName
                 }
                 ).ToList();
-                objSourceList.Insert(0, new SelectListItem() { Value = "0", Text = "-- Please select your Column --" });
+                objSourceList.Insert(0, new SelectListItem() { Value = "", Text = "-- Please select your Column --" });
                 return objSourceList;
             }
             catch (Exception ex)
@@ -66,7 +66,7 @@ namespace ArmMordanizerGUI.Service
 
                 SqlConnection con = new SqlConnection(connString);
 
-                string srcQuery = @"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
+                string srcQuery = @"SELECT TABLE_NAME,TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES";
                 using (SqlCommand cmd = new SqlCommand(srcQuery, con))
                 {
                     //cmd.Parameters.AddWithValue("@TableName", v);
@@ -78,7 +78,7 @@ namespace ArmMordanizerGUI.Service
                 List<string> objSourceTables = new List<string>();
                 foreach (DataRow row in srcObjTable.Rows)
                 {
-                    objSourceTables.Add(row["TABLE_NAME"].ToString());
+                    objSourceTables.Add(String.Concat(row["TABLE_SCHEMA"].ToString(),".",row["TABLE_NAME"].ToString()));
 
                 }
                 List<SelectListItem> objSourceTableList = objSourceTables.Select(x => new SelectListItem()

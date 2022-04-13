@@ -15,7 +15,6 @@ namespace ArmMordanizerGUI.Controllers
         private DestinationData _destinationData;
         private MapperData _mapperData;
 
-        //rivate ConnectionDb _connectionDB;
         private IConfiguration Configuration;
 
 
@@ -28,47 +27,24 @@ namespace ArmMordanizerGUI.Controllers
             _destinationData = new DestinationData(_configuration);
             //_connectionDB = dbC;
         }
-        public IActionResult Index()
-        {
-            IEnumerable<Mapping> objCategoryList = _db.Mappings.ToList();
-            return View(objCategoryList);
-        }
-
-        //GET
-        public IActionResult Create()
-        {
-            return View();
-        }
-        //POST
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(Mapping obj)
-        {
-            if (obj.Name == obj.DisplayOrder.ToString())
-            {
-                ModelState.AddModelError("Name", "The Display Order cannot exactly match Name. ");
-            }
-            if (ModelState.IsValid)
-            {
-                _db.Mappings.Add(obj);
-                _db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(obj);
-        }
+        
 
 
         public IActionResult MapTable()
         {
             Mapper mapper = new Mapper();
             mapper.sourcetableSelectList = new SelectList(_sourceData.GetSourceTableInfo(), "Text", "Value");
-            mapper.desTinationTableSelectList = new SelectList(_destinationData.GetSourceTableInfo(), "Text", "Value");
+            mapper.desTinationTableSelectList = new SelectList(_destinationData.GetDestinationTableInfo(), "Text", "Value");
 
             List<SelectListItem> reUseData = new List<SelectListItem>();
+            reUseData.Add(new SelectListItem("Please Select Option", "0"));
             reUseData.Add(new SelectListItem("Yes", "1"));
-            reUseData.Add(new SelectListItem("No", "1"));
+            reUseData.Add(new SelectListItem("No", "2"));
+
+
 
             mapper.reUseConfiguration = new SelectList(reUseData, "Text", "Value"); ;
+
             return View(mapper);
         }
         [HttpPost]
@@ -86,7 +62,18 @@ namespace ArmMordanizerGUI.Controllers
                 }
                 else
                 {
-                    msg = _mapperData.UpdateInsertMappingData(obj);
+                    foreach (var item in obj.mapTables)
+                    {
+                        if (item.sourceColumn != null && item.targetColumn != null)
+                            continue;
+                        else if (item.sourceColumn == null && item.targetColumn == null)
+                            continue ;
+                        else
+                            msg = "Source and Destination Column Mapping Missing";
+                        if (item.SourceColumnType != item.TargetColumnType)
+                            msg = "Source and Destination Column Type Does Not Match";
+                    }
+                    msg = _mapperData.UpdateMappingData(obj);
                 }
             }
             else
@@ -94,17 +81,6 @@ namespace ArmMordanizerGUI.Controllers
                 msg = _mapperData.Save(obj);
 
             }
-
-            //    if (obj.mapTables.Count == obj.DisplayOrder.ToString())
-            //    {
-            //        ModelState.AddModelError("Name", "The Display Order cannot exactly match Name. ");
-            //    }
-            //    if (ModelState.IsValid)
-            //    {
-            //        _db.Mappings.Add(obj);
-            //        _db.SaveChanges();
-            //        return RedirectToAction("Index");
-            //    }
             TempData["message"] = msg;
             return RedirectToAction("MapTable", "Mapping");
         }
@@ -135,8 +111,13 @@ namespace ArmMordanizerGUI.Controllers
                 bool isExists = _mapperData.IsSrcDesExists(SrcTableName, desTableName);
                 if (!isExists)
                 {
-                    TempData["message"] = "Configuration Data Not Found.";
-                    return RedirectToAction("MapTable", "Mapping");
+                    TempData["message"] = null;
+                    List<MapTable> objMapList = new List<MapTable>();
+                    mapper.mapTables = objMapList;
+                    return PartialView("~/Views/Shared/_MapPartial.cshtml", mapper);
+                    //Response.Redirect("/Mapping/MapTable", true);
+
+                    //return RedirectToAction("MapTable", "Mapping");
                 }
                 else
                 {
@@ -146,7 +127,7 @@ namespace ArmMordanizerGUI.Controllers
                     mapper.destinationTableName = desTableName;
                 }
             }
-            else
+            else if (reUseValue == "2")
             {
                 mapper = _mapperData.GetMapper(objDestinationList, objSourceList);
                 mapper.sourceTableName = SrcTableName;
