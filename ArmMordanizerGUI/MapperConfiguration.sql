@@ -1,12 +1,5 @@
 
 
-/****** Object:  Table [dbo].[MapperConfiguration]    Script Date: 4/9/2022 3:34:35 PM ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE TABLE [dbo].[MapperConfiguration](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[SourceTable] [nvarchar](max) NOT NULL,
@@ -14,6 +7,7 @@ CREATE TABLE [dbo].[MapperConfiguration](
 	[SQL] [nvarchar](max) NOT NULL,
 	[IsActive] [bit] NOT NULL,
 	[CreatedDate] [date] NOT NULL,
+	[UpdatedDate] [date] NULL,
  CONSTRAINT [PK_MapperConfiguration] PRIMARY KEY CLUSTERED 
 (
 	[ID] ASC

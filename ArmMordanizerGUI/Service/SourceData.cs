@@ -8,12 +8,10 @@ namespace ArmMordanizerGUI.Service
 {
     public class SourceData
     {
-        //private ConnectionDb _connectionDB;
         private IConfiguration Configuration;
 
         public SourceData(IConfiguration _configuration)
         {
-            //_connectionDB = new ConnectionDb();
             Configuration = _configuration;
 
         }
@@ -29,8 +27,6 @@ namespace ArmMordanizerGUI.Service
                 string srcQuery = @"SELECT name,system_type_name FROM sys.dm_exec_describe_first_result_set( N'SELECT * FROM " + v + "', NULL, 0 )";
                 using (SqlCommand cmd = new SqlCommand(srcQuery, con))
                 {
-                    //cmd.Parameters.AddWithValue("@TableName", v);
-
                     con.Open();
                     srcObjTable.Load(cmd.ExecuteReader());
                     con.Close();
@@ -69,7 +65,6 @@ namespace ArmMordanizerGUI.Service
                 string srcQuery = @"SELECT TABLE_NAME,TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES";
                 using (SqlCommand cmd = new SqlCommand(srcQuery, con))
                 {
-                    //cmd.Parameters.AddWithValue("@TableName", v);
 
                     con.Open();
                     srcObjTable.Load(cmd.ExecuteReader());
@@ -78,7 +73,7 @@ namespace ArmMordanizerGUI.Service
                 List<string> objSourceTables = new List<string>();
                 foreach (DataRow row in srcObjTable.Rows)
                 {
-                    objSourceTables.Add(String.Concat(row["TABLE_SCHEMA"].ToString(),".",row["TABLE_NAME"].ToString()));
+                    objSourceTables.Add(String.Concat(row["TABLE_SCHEMA"].ToString(), ".", row["TABLE_NAME"].ToString()));
 
                 }
                 List<SelectListItem> objSourceTableList = objSourceTables.Select(x => new SelectListItem()

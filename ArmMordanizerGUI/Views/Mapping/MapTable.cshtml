@@ -13,10 +13,6 @@
                 </div>
                 <div class="col-md-8">
                     @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-control"})
-
-                    @*@Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table")
-                        @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList),"Select Source Table",new { @class = "form-control", onchange = "document.location.href = '/Mapping/SourceTableddlChange?obj=' + m;" })*@
-
                 </div>
 
             </div>
@@ -43,19 +39,11 @@
                 </div>
                 <div class="col-md-8">
                     @Html.DropDownListFor(m=>m.reUseValue, new SelectList(Model.reUseConfiguration, "Text", "Value"),new {@class = "form-control", onchange = "SelectedIndexChanged()" })
-
-                    @* @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "document.location.href = '/Mapping/DestinationTableddlChange?obj=' + m;" })
-                        @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "SelectedIndexChanged" })
-                        @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Destination Table")*@
-
                 </div>
             </div>
         </div>
     </div>
 
-    @*    @{
-        await Html.PartialAsync("_MapPartial", Model);
-        }*@
     <div id="mypartial"> </div>
 
 
@@ -78,8 +66,7 @@
                  };
 
      $.post(url, model, function(res){
-        //res contains the markup returned by the partial view
-        //You probably want to set that to some Div.
+
         $("#mypartial").html(res);
      });
              }

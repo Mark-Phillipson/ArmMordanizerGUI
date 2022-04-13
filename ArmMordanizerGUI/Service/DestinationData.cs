@@ -8,12 +8,10 @@ namespace ArmMordanizerGUI.Service
 {
     public class DestinationData
     {
-        //private ConnectionDb _connectionDB;
         private IConfiguration Configuration;
 
         public DestinationData(IConfiguration _configuration)
         {
-            //_connectionDB = new ConnectionDb();
             Configuration = _configuration;
 
 
@@ -24,7 +22,6 @@ namespace ArmMordanizerGUI.Service
 
             List<TableColumns> objDestinationColumns = new List<TableColumns>();
             string desQuery = @"SELECT name,system_type_name FROM sys.dm_exec_describe_first_result_set( N'SELECT * FROM "+v+"', NULL, 0 )";
-            //string cName = "Data Source=192.168.250.57; Initial Catalog=AmmsOnlineCountry;User ID=sa;Password=Online@Ammsdb";
             string connString = this.Configuration.GetConnectionString("DefaultConnection");
             SqlConnection con = new SqlConnection(connString);
             using (SqlCommand cmd = new SqlCommand(desQuery, con))
@@ -65,7 +62,6 @@ namespace ArmMordanizerGUI.Service
                 string srcQuery = @"SELECT TABLE_NAME,TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES";
                 using (SqlCommand cmd = new SqlCommand(srcQuery, con))
                 {
-                    //cmd.Parameters.AddWithValue("@TableName", v);
 
                     con.Open();
                     desObjTable.Load(cmd.ExecuteReader());

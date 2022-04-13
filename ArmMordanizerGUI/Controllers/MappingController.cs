@@ -25,7 +25,6 @@ namespace ArmMordanizerGUI.Controllers
             _mapperData = new MapperData(_configuration);
             _sourceData = new SourceData(_configuration);
             _destinationData = new DestinationData(_configuration);
-            //_connectionDB = dbC;
         }
         
 
@@ -115,9 +114,6 @@ namespace ArmMordanizerGUI.Controllers
                     List<MapTable> objMapList = new List<MapTable>();
                     mapper.mapTables = objMapList;
                     return PartialView("~/Views/Shared/_MapPartial.cshtml", mapper);
-                    //Response.Redirect("/Mapping/MapTable", true);
-
-                    //return RedirectToAction("MapTable", "Mapping");
                 }
                 else
                 {
