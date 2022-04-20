@@ -79,7 +79,7 @@ namespace ArmMordanizerGUI.Service
 
                 SqlConnection con = new SqlConnection(connString);
 
-                string sql = "SELECT COUNT(*) FROM MapperConfiguration WHERE SourceTable = @SourceTable AND DestinationTable = @DestinationTable";
+                string sql = "SELECT COUNT(*) FROM MapperConfiguration WHERE SourceTable = @SourceTable AND DestinationTable = @DestinationTable AND IsActive = 1";
 
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {
