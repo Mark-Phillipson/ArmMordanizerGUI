@@ -9,6 +9,7 @@ namespace ArmMordanizerGUI.Service
     public class SourceData
     {
         private IConfiguration Configuration;
+        private string srctempTablePrefix = "TMP_RAW_"; 
 
         public SourceData(IConfiguration _configuration)
         {
@@ -62,7 +63,7 @@ namespace ArmMordanizerGUI.Service
 
                 SqlConnection con = new SqlConnection(connString);
 
-                string srcQuery = @"SELECT TABLE_NAME,TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES";
+                string srcQuery = @"SELECT TABLE_NAME,TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES where TABLE_NAME like'TMP_RAW_%'";
                 using (SqlCommand cmd = new SqlCommand(srcQuery, con))
                 {
 
