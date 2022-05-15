@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "E:\\work\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI.csproj": {}
+    "D:\\Upwork\\Andy\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI.csproj": {}
   },
   "projects": {
-    "E:\\work\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI.csproj": {
+    "D:\\Upwork\\Andy\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\work\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI.csproj",
+        "projectUniqueName": "D:\\Upwork\\Andy\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI.csproj",
         "projectName": "ArmMordanizerGUI",
-        "projectPath": "E:\\work\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI.csproj",
-        "packagesPath": "C:\\Users\\atibur\\.nuget\\packages\\",
-        "outputPath": "E:\\work\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI\\obj\\",
+        "projectPath": "D:\\Upwork\\Andy\\ArmMordanizerGUI\\ArmMordanizerGUI\\ArmMordanizerGUI.csproj",
+        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
+        "outputPath": "D:\\Upwork\\Andy\\ArmMordanizerGUI\\ArmMordanizerGUI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\atibur\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -84,7 +84,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     }
