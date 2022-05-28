@@ -8,49 +8,49 @@ build_property.PlatformNeutralAssembly =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = ArmMordanizerGUI
 build_property.RootNamespace = ArmMordanizerGUI
-build_property.ProjectDir = D:\Upwork\Andy\ArmMordanizerGUI\ArmMordanizerGUI\
+build_property.ProjectDir = E:\work\ArmMordanizerGUI\ArmMordanizerGUI\ArmMordanizerGUI\
 build_property.RazorLangVersion = 6.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = true
-build_property.MSBuildProjectDirectory = D:\Upwork\Andy\ArmMordanizerGUI\ArmMordanizerGUI
+build_property.MSBuildProjectDirectory = E:\work\ArmMordanizerGUI\ArmMordanizerGUI\ArmMordanizerGUI
 build_property._RazorSourceGeneratorDebug = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/Home/Index.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/Home/Privacy.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/Mapping/MapTable.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/Mapping/MapTable.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFwcGluZ1xNYXBUYWJsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/EditorTemplates/_MapTable.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/EditorTemplates/_MapTable.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVkaXRvclRlbXBsYXRlc1xfTWFwVGFibGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/Error.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/_MapPartial.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/_MapPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9NYXBQYXJ0aWFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/_ValidationScriptsPartial.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/_ViewImports.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/_ViewStart.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Upwork/Andy/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/_Layout.cshtml]
+[E:/work/ArmMordanizerGUI/ArmMordanizerGUI/ArmMordanizerGUI/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-5qhg9sfm4m

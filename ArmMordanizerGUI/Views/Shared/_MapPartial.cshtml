@@ -4,8 +4,10 @@
 }
 
 @*    <label>Model.sourceTablename</label>
-*@    @for (i = 0; i < Model.mapTables.Count; i++)
+*@
+@*@for (i = 0; i < Model.mapTables.Count; i++)
 {
+
 
     <div class="row pt-12" style="border:dashed;padding-top:10px;">
         <div class="row pt-6">
@@ -25,7 +27,32 @@
             </div>
         </div>
     </div>
-}
+}*@
+
+<div class="row pt-12" style="border:none;padding-top:10px;">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th class="text-primary text-center">Source Table</th>
+                <th class="text-primary text-center">Destination Table</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (i = 0; i < Model.mapTables.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new { @class = "form-control" })
+                    </td>
+                    <td>
+                        @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), new { @class = "form-control" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
 <br />
 <br />
 @if (Model.mapTables.Count == 0)

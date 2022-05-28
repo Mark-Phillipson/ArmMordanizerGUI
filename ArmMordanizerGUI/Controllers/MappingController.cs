@@ -78,6 +78,7 @@ namespace ArmMordanizerGUI.Controllers
             else
             {
                 msg = _mapperData.Save(obj);
+                _mapperData.MoveFileToReUpload(obj.sourceTableName);
 
             }
             TempData["message"] = msg;

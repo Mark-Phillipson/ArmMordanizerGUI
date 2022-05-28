@@ -7,6 +7,9 @@ namespace ArmMordanizerGUI.Service
     public class MapperData
     {
         private IConfiguration Configuration;
+        private string fileLocationForReUploadPropertyName = "ReUpload";
+        private string fileLocationForUpload = "UploadQueue";
+        private string fileLocationForUploadCompleted = "UploadCompletePath";
 
         public MapperData(IConfiguration _configuration)
         {
@@ -103,6 +106,127 @@ namespace ArmMordanizerGUI.Service
 
         }
 
+        internal void MoveFileToReUpload(string sourceTableName)
+        {
+            string fileName = GetFileName(sourceTableName.Split(new string[] { "." }, StringSplitOptions.None).Last());
+
+            string fileLocationForReupload = GetFileLocation(fileLocationForReUploadPropertyName);
+            if (!fileLocationForReupload.EndsWith("\\"))
+            {
+                fileLocationForReupload = fileLocationForReupload + "\\";
+            }
+
+            string fileLocationForQueue = GetFileLocation(fileLocationForUpload);
+            if (!fileLocationForQueue.EndsWith("\\"))
+            {
+                fileLocationForQueue = fileLocationForQueue + "\\";
+            }
+
+            string fileLocationForUploadComplete = GetFileLocation(fileLocationForUploadCompleted);
+            if (!fileLocationForUploadComplete.EndsWith("\\"))
+            {
+                fileLocationForUploadComplete = fileLocationForUploadComplete + "\\";
+            }
+
+            int isFileExists = CopyFileToReUploadFolder(fileName, fileLocationForReupload, fileLocationForUploadComplete);
+            if (isFileExists == 0)
+            {
+                CopyFileToUploadQueue(fileName, fileLocationForQueue, fileLocationForUploadComplete);
+            }
+
+        }
+
+        private void CopyFileToUploadQueue(string fileName, string fileLocationForUpload, string fileLocationForUploadComplete)
+        {
+
+            DirectoryInfo hdDirectoryInWhichToSearch = new DirectoryInfo(fileLocationForUploadComplete);
+
+            FileInfo[] filesInDir = hdDirectoryInWhichToSearch.GetFiles("*" + fileName + "*.*");
+
+            var filesCompleted = filesInDir[filesInDir.Length - 1].FullName;//Directory.GetFiles(fileLocationForUploadCompleted, fileName + "00" + ".*").FirstOrDefault();
+
+            string fileToMove = fileLocationForUploadComplete + Path.GetFileName(filesCompleted);
+                string moveTo = fileLocationForUpload;
+
+            //moving file
+            File.Copy(fileToMove, Path.Combine(fileLocationForUpload, fileName + Path.GetExtension(filesCompleted)), true);
+        }
+
+        private int CopyFileToReUploadFolder(string fileName, string fileLocationForReupload,string fileLocationForUploadCompleted)
+        {
+            if (!Directory.Exists(fileLocationForReupload))
+                Directory.CreateDirectory(fileLocationForReupload);
+
+            var files = Directory.GetFiles(fileLocationForReupload, fileName + ".*");
+
+            DirectoryInfo hdDirectoryInWhichToSearch = new DirectoryInfo(fileLocationForUploadCompleted);
+
+            FileInfo[] filesInDir = hdDirectoryInWhichToSearch.GetFiles("*" + fileName + "*.*");
+
+            var filesCompleted = filesInDir[filesInDir.Length - 1].FullName;//Directory.GetFiles(fileLocationForUploadCompleted, fileName + "00" + ".*").FirstOrDefault();
+            if (files.Length == 0)
+            {
+                string fileToMove = fileLocationForUploadCompleted + Path.GetFileName(filesCompleted);
+                string moveTo = fileLocationForReupload;
+
+                //moving file
+                File.Copy(fileToMove, Path.Combine(fileLocationForReupload,fileName + Path.GetExtension(filesCompleted)), true);
+                return 0;
+            }
+            return 1;
+        }
+
+        private string GetFileLocation(string propertyName)
+        {
+            string folderLocation = "";
+            string connString = this.Configuration.GetConnectionString("DefaultConnection");
+            string sql = "Select PropertyValue from [SystemGlobalProperties] WHERE [PropertyName] = @propertyName";
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@propertyName", propertyName);
+
+                        folderLocation = (string)cmd.ExecuteScalar();
+                    }
+                }
+                return folderLocation;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private string GetFileName(string tableName)
+        {
+            string fileName = "";
+            string connString = this.Configuration.GetConnectionString("DefaultConnection");
+            string sql = "SELECT DISTINCT FileName From FileStore Where TableName = @tableName";
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@tableName", tableName);
+
+                        fileName = (string)cmd.ExecuteScalar();
+                    }
+                }
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
         public string UpdateMappingData(Mapper obj)
         {
             string connString = this.Configuration.GetConnectionString("DefaultConnection");
@@ -117,13 +241,13 @@ namespace ArmMordanizerGUI.Service
                 {
                     conn.Open();
                     transaction = conn.BeginTransaction();
-                    using (SqlCommand cmd = new SqlCommand(updateSql, conn, transaction)) 
+                    using (SqlCommand cmd = new SqlCommand(updateSql, conn, transaction))
                     {
                         cmd.Parameters.AddWithValue("@SourceTable", obj.sourceTableName);
                         cmd.Parameters.AddWithValue("@DestinationTable", obj.destinationTableName);
                         cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
 
-                        cmd.ExecuteNonQuery(); 
+                        cmd.ExecuteNonQuery();
                     }
                     using (SqlCommand cmd = new SqlCommand(insertSql, conn, transaction))
                     {
@@ -133,7 +257,7 @@ namespace ArmMordanizerGUI.Service
                         cmd.Parameters.AddWithValue("@IsActive", 1);
                         cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
 
-                        cmd.ExecuteNonQuery(); 
+                        cmd.ExecuteNonQuery();
                     }
                     transaction.Commit();
                     conn.Close();
