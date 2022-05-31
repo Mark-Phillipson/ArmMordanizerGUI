@@ -59,7 +59,9 @@ namespace ArmMordanizerGUI.Service
 
                 SqlConnection con = new SqlConnection(connString);
 
-                string srcQuery = @"SELECT TABLE_NAME,TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES";
+                //string srcQuery = @"SELECT TABLE_NAME,TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES";
+                string srcQuery = @"SELECT [Table],[Schema] FROM [dbo].[A_TablePermit] WHERE [Uploadable] = 1";
+
                 using (SqlCommand cmd = new SqlCommand(srcQuery, con))
                 {
 
@@ -70,7 +72,7 @@ namespace ArmMordanizerGUI.Service
                 List<string> objDestinationTables = new List<string>();
                 foreach (DataRow row in desObjTable.Rows)
                 {
-                    objDestinationTables.Add(String.Concat(row["TABLE_SCHEMA"].ToString(), ".", row["TABLE_NAME"].ToString()));
+                    objDestinationTables.Add(String.Concat(row["Schema"].ToString(), ".", row["Table"].ToString()));
 
                 }
                 List<SelectListItem> objDestinationTableList = objDestinationTables.Select(x => new SelectListItem()

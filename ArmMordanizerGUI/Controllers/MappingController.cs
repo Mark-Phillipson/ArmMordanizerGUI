@@ -102,8 +102,8 @@ namespace ArmMordanizerGUI.Controllers
         public IActionResult MapPartial(string SrcTableName, string desTableName, string reUseValue)
         {
             Mapper mapper = new Mapper();
-            List<SelectListItem> objDestinationList = _destinationData.GetDestinationData(SrcTableName);
-            List<SelectListItem> objSourceList = _sourceData.GetSourceData(desTableName);
+            List<SelectListItem> objDestinationList = _destinationData.GetDestinationData(desTableName);
+            List<SelectListItem> objSourceList = _sourceData.GetSourceData(SrcTableName);
 
             string msg = null;
             if (reUseValue == "1")
