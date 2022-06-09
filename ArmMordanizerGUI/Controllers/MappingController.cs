@@ -77,7 +77,16 @@ namespace ArmMordanizerGUI.Controllers
             }
             else
             {
-                msg = _mapperData.Save(obj);
+                bool isExists = _mapperData.IsSrcDesExists(obj.sourceTableName, obj.destinationTableName);
+                if (isExists)
+                {
+                    msg = _mapperData.UpdateMappingData(obj);
+
+                }
+                else
+                {
+                    msg = _mapperData.Save(obj);
+                }
                 _mapperData.MoveFileToReUpload(obj.sourceTableName);
 
             }

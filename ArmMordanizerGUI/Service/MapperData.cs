@@ -192,6 +192,7 @@ namespace ArmMordanizerGUI.Service
 
                         folderLocation = (string)cmd.ExecuteScalar();
                     }
+                    conn.Close();
                 }
                 return folderLocation;
             }
@@ -217,6 +218,7 @@ namespace ArmMordanizerGUI.Service
 
                         fileName = (string)cmd.ExecuteScalar();
                     }
+                    conn.Close();
                 }
                 return fileName;
             }
@@ -340,12 +342,12 @@ namespace ArmMordanizerGUI.Service
             string[] data = existingSql.Split(new[] { "SELECT" }, StringSplitOptions.None);
 
 
-            string[] srcTemp = data[0].Split(new[] { "(" }, StringSplitOptions.None);
-            srcTemp[1] = srcTemp[1].Replace("&nbsp;", " ").Replace(")", "").Replace("\r", "").Replace("\n", "");
-            srcTemp = srcTemp[1].Split(new[] { "," }, StringSplitOptions.None);
+            string[] desTemp = data[0].Split(new[] { "(" }, StringSplitOptions.None);
+            desTemp[1] = desTemp[1].Replace("&nbsp;", " ").Replace(")", "").Replace("\r", "").Replace("\n", "");
+            desTemp = desTemp[1].Split(new[] { "," }, StringSplitOptions.None);
 
-            string[] desTemp = data[1].Split(new[] { "FROM" }, StringSplitOptions.None);
-            desTemp = desTemp[0].Split(new[] { "," }, StringSplitOptions.None);
+            string[] srcTemp= data[1].Split(new[] { "FROM" }, StringSplitOptions.None);
+            srcTemp = srcTemp[0].Split(new[] { "," }, StringSplitOptions.None);
 
             for (int i = 0; i < srcTemp.Length; i++)
             {

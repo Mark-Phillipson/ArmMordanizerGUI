@@ -72,7 +72,7 @@ namespace ArmMordanizerGUI.Service
                 List<string> objDestinationTables = new List<string>();
                 foreach (DataRow row in desObjTable.Rows)
                 {
-                    objDestinationTables.Add(String.Concat(row["Schema"].ToString(), ".", row["Table"].ToString()));
+                    objDestinationTables.Add(String.Concat(row["Schema"].ToString(), ".","[", row["Table"].ToString(),"]"));
 
                 }
                 List<SelectListItem> objDestinationTableList = objDestinationTables.Select(x => new SelectListItem()
