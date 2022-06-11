@@ -9,6 +9,7 @@ namespace ArmMordanizerGUI.Service
     public class DestinationData
     {
         private IConfiguration Configuration;
+        private string defaultSchemaName = "dbo";
 
         public DestinationData(IConfiguration _configuration)
         {
@@ -72,7 +73,7 @@ namespace ArmMordanizerGUI.Service
                 List<string> objDestinationTables = new List<string>();
                 foreach (DataRow row in desObjTable.Rows)
                 {
-                    objDestinationTables.Add(String.Concat(row["Schema"].ToString(), ".","[", row["Table"].ToString(),"]"));
+                    objDestinationTables.Add(String.Concat(defaultSchemaName, ".","[", row["Table"].ToString(),"]"));
 
                 }
                 List<SelectListItem> objDestinationTableList = objDestinationTables.Select(x => new SelectListItem()
