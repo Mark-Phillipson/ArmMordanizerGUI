@@ -22,11 +22,21 @@ namespace ArmMordanizerGUI.Service
             foreach (var objColumn in objDestinationList1)
             {
                 MapTable mapTable = new MapTable();
-                mapTable.sourceColumn = "";
-                mapTable.targetColumn = "";
+                var sourceColumn = objSourceList.FirstOrDefault(x => x.Text == objColumn.Text);
+                if (sourceColumn != null)
+                {
+                    mapTable.sourceColumn = sourceColumn.Text;
+                    mapTable.targetColumn = objColumn.Text;
+                }
+                else
+                {
+                    mapTable.sourceColumn = "";
+                    mapTable.targetColumn = objColumn.Text;
+                }
+
                 objMapList.Add(mapTable);
             }
-            objMapList.RemoveAt(objMapList.Count - 1);
+            //objMapList.RemoveAt(objMapList.Count - 1);
             Mapper mapper = new Mapper();
             mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
             mapper.desTinationSelectList = new SelectList(objDestinationList1, "Text", "Value");
@@ -146,13 +156,13 @@ namespace ArmMordanizerGUI.Service
             var filesCompleted = filesInDir[filesInDir.Length - 1].FullName;//Directory.GetFiles(fileLocationForUploadCompleted, fileName + "00" + ".*").FirstOrDefault();
 
             string fileToMove = fileLocationForUploadComplete + Path.GetFileName(filesCompleted);
-                string moveTo = fileLocationForUpload;
+            string moveTo = fileLocationForUpload;
 
             //moving file
             File.Copy(fileToMove, Path.Combine(fileLocationForUpload, fileName + Path.GetExtension(filesCompleted)), true);
         }
 
-        private int CopyFileToReUploadFolder(string fileName, string fileLocationForReupload,string fileLocationForUploadCompleted)
+        private int CopyFileToReUploadFolder(string fileName, string fileLocationForReupload, string fileLocationForUploadCompleted)
         {
             if (!Directory.Exists(fileLocationForReupload))
                 Directory.CreateDirectory(fileLocationForReupload);
@@ -170,7 +180,7 @@ namespace ArmMordanizerGUI.Service
                 string moveTo = fileLocationForReupload;
 
                 //moving file
-                File.Copy(fileToMove, Path.Combine(fileLocationForReupload,fileName + Path.GetExtension(filesCompleted)), true);
+                File.Copy(fileToMove, Path.Combine(fileLocationForReupload, fileName + Path.GetExtension(filesCompleted)), true);
                 return 0;
             }
             return 1;
@@ -346,7 +356,7 @@ namespace ArmMordanizerGUI.Service
             desTemp[1] = desTemp[1].Replace("&nbsp;", " ").Replace(")", "").Replace("\r", "").Replace("\n", "");
             desTemp = desTemp[1].Split(new[] { "," }, StringSplitOptions.None);
 
-            string[] srcTemp= data[1].Split(new[] { "FROM" }, StringSplitOptions.None);
+            string[] srcTemp = data[1].Split(new[] { "FROM" }, StringSplitOptions.None);
             srcTemp = srcTemp[0].Split(new[] { "," }, StringSplitOptions.None);
 
             for (int i = 0; i < srcTemp.Length; i++)
@@ -372,17 +382,35 @@ namespace ArmMordanizerGUI.Service
                 objMapList.Add(mapTable);
             }
             int count = objMapList.Count;
+
+            List<SelectListItem> result = objDestinationList
+                .ExceptBy(objMapList.Select(msg => msg.targetColumn), msg => msg.Text)
+                .ToList();
+
             if (objDestinationList.Count > count)
             {
-                for (int i = 0; i < objDestinationList.Count - count; i++)
+                for (int i = 1; i < result.Count; i++)
                 {
                     MapTable mapTable = new MapTable();
-                    mapTable.sourceColumn = "";
-                    mapTable.targetColumn = "";
+                    var sourceColumn = objSourceList.FirstOrDefault(x => x.Text == result[i].Text);
+                    //var desColumn = objMapList.FirstOrDefault(x => x.targetColumn == objDestinationList[i].Text);
+
+                    if (sourceColumn != null)
+                    {
+                        mapTable.sourceColumn = sourceColumn.Text;
+                        mapTable.targetColumn = result[i].Text;
+                    }
+                    else
+                    {
+                        mapTable.sourceColumn = "";
+                        mapTable.targetColumn = result[i].Text;
+                    }
+                    //mapTable.sourceColumn = "";
+                    //mapTable.targetColumn = "";
                     objMapList.Add(mapTable);
                 }
             }
-            objMapList.RemoveAt(objMapList.Count - 1);
+            //objMapList.RemoveAt(objMapList.Count - 1);
             Mapper mapper = new Mapper();
             mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
             mapper.desTinationSelectList = new SelectList(objDestinationList, "Text", "Value");

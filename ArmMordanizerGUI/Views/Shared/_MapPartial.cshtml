@@ -63,3 +63,8 @@
 {
     <button type="submit" class="btn btn-primary" style="width:150px;">Create</button>
 }
+@if (Model.mapTables.Count > 0)
+{
+    <button type="reset" class="btn btn-warning" style="width:150px;" onclick="location.href='@Url.Action("Reset", "Mapping")'"> Reset </button>
+    //<button type="reset" class="btn btn-warning" style="width:150px;" >Reset</button>
+}

@@ -23,7 +23,7 @@
                     <label class="text-primary">Select Destination Table</label>
                 </div>
                 <div class="col-md-8">
-                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-control" })
+                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-control",onchange = "SelectedIndexChanged()" })
 
                     @* @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "document.location.href = '/Mapping/DestinationTableddlChange?obj=' + m;" })
                         @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "SelectedIndexChanged" })
@@ -32,7 +32,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+@*        <div class="col-md-6">
             <div class="row">
                 <div class="col-md-4">
                     <label class="text-primary">Select Re Use Option</label>
@@ -41,7 +41,7 @@
                     @Html.DropDownListFor(m=>m.reUseValue, new SelectList(Model.reUseConfiguration, "Text", "Value"),new {@class = "form-control", onchange = "SelectedIndexChanged()" })
                 </div>
             </div>
-        </div>
+        </div>*@
     </div>
 
     <div id="mypartial"> </div>
@@ -61,8 +61,9 @@
     var url = "@Url.Action("MapPartial","Mapping")";
 
      var model = { SrcTableName :document.getElementById("sourceTableName").value,
-                   DesTableName:document.getElementById("destinationTableName").value,
-                   ReUseValue:document.getElementById("reUseValue").value
+                   DesTableName:document.getElementById("destinationTableName").value
+                   //,
+                   //ReUseValue:document.getElementById("reUseValue").value
                  };
 
      $.post(url, model, function(res){

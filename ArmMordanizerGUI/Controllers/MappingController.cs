@@ -26,7 +26,7 @@ namespace ArmMordanizerGUI.Controllers
             _sourceData = new SourceData(_configuration);
             _destinationData = new DestinationData(_configuration);
         }
-        
+
 
 
         public IActionResult MapTable()
@@ -35,14 +35,6 @@ namespace ArmMordanizerGUI.Controllers
             mapper.sourcetableSelectList = new SelectList(_sourceData.GetSourceTableInfo(), "Text", "Value");
             mapper.desTinationTableSelectList = new SelectList(_destinationData.GetDestinationTableInfo(), "Text", "Value");
 
-            List<SelectListItem> reUseData = new List<SelectListItem>();
-            reUseData.Add(new SelectListItem("Please Select Option", "0"));
-            reUseData.Add(new SelectListItem("Yes", "1"));
-            reUseData.Add(new SelectListItem("No", "2"));
-
-
-
-            mapper.reUseConfiguration = new SelectList(reUseData, "Text", "Value"); ;
 
             return View(mapper);
         }
@@ -51,29 +43,21 @@ namespace ArmMordanizerGUI.Controllers
         public IActionResult MapTable(Mapper obj)
         {
             string msg = null;
-            if (obj.reUseValue == 1)
+            foreach (var item in obj.mapTables)
             {
-                bool isExists = _mapperData.IsSrcDesExists(obj.sourceTableName, obj.destinationTableName);
-                if (!isExists)
-                {
-                    TempData["message"] = "Configuration Data Not Found.";
-                    return RedirectToAction("MapTable", "Mapping");
-                }
+                if (item.sourceColumn != null && item.targetColumn != null)
+                    continue;
+                else if (item.sourceColumn == null && item.targetColumn == null)
+                    continue;
                 else
-                {
-                    foreach (var item in obj.mapTables)
-                    {
-                        if (item.sourceColumn != null && item.targetColumn != null)
-                            continue;
-                        else if (item.sourceColumn == null && item.targetColumn == null)
-                            continue ;
-                        else
-                            msg = "Source and Destination Column Mapping Missing";
-                        if (item.SourceColumnType != item.TargetColumnType)
-                            msg = "Source and Destination Column Type Does Not Match";
-                    }
-                    msg = _mapperData.UpdateMappingData(obj);
-                }
+                    msg = "Source and Destination Column Mapping Missing";
+                if (item.SourceColumnType != item.TargetColumnType)
+                    msg = "Source and Destination Column Type Does Not Match";
+            }
+            if (msg != null)
+            {
+                TempData["message"] = msg;
+                return RedirectToAction("MapTable", "Mapping");
             }
             else
             {
@@ -89,9 +73,10 @@ namespace ArmMordanizerGUI.Controllers
                 }
                 _mapperData.MoveFileToReUpload(obj.sourceTableName);
 
+
+                TempData["message"] = msg;
+                return RedirectToAction("MapTable", "Mapping");
             }
-            TempData["message"] = msg;
-            return RedirectToAction("MapTable", "Mapping");
         }
         public IActionResult DestinationTableddlChange(Mapper obj)
         {
@@ -108,41 +93,41 @@ namespace ArmMordanizerGUI.Controllers
 
         }
         [HttpPost]
-        public IActionResult MapPartial(string SrcTableName, string desTableName, string reUseValue)
+        public IActionResult MapPartial(string SrcTableName, string desTableName)
         {
             Mapper mapper = new Mapper();
             List<SelectListItem> objDestinationList = _destinationData.GetDestinationData(desTableName);
             List<SelectListItem> objSourceList = _sourceData.GetSourceData(SrcTableName);
 
             string msg = null;
-            if (reUseValue == "1")
+            bool isExists = _mapperData.IsSrcDesExists(SrcTableName, desTableName);
+
+
+            if (!isExists)
             {
-                bool isExists = _mapperData.IsSrcDesExists(SrcTableName, desTableName);
-                if (!isExists)
-                {
-                    TempData["message"] = null;
-                    List<MapTable> objMapList = new List<MapTable>();
-                    mapper.mapTables = objMapList;
-                    return PartialView("~/Views/Shared/_MapPartial.cshtml", mapper);
-                }
-                else
-                {
-                    List<MapTable> objMapTable = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
-                    mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable);
-                    mapper.sourceTableName = SrcTableName;
-                    mapper.destinationTableName = desTableName;
-                }
-            }
-            else if (reUseValue == "2")
-            {
+                TempData["message"] = null;
                 mapper = _mapperData.GetMapper(objDestinationList, objSourceList);
+                mapper.sourceTableName = SrcTableName;
+                mapper.destinationTableName = desTableName;
+            }
+            else
+            {
+                List<MapTable> objMapTable = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
+                mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable);
                 mapper.sourceTableName = SrcTableName;
                 mapper.destinationTableName = desTableName;
             }
 
 
 
+
             return PartialView("~/Views/Shared/_MapPartial.cshtml", mapper);
+        }
+        public IActionResult Reset()
+        {
+            TempData["message"] = null;
+            return RedirectToAction("MapTable", "Mapping");
+
         }
 
     }
