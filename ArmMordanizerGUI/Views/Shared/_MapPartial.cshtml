@@ -6,29 +6,30 @@
 @*    <label>Model.sourceTablename</label>
 *@
 @*@for (i = 0; i < Model.mapTables.Count; i++)
-{
+    {
 
 
     <div class="row pt-12" style="border:dashed;padding-top:10px;">
-        <div class="row pt-6">
-            <div class="col-4">
-                <h2 class="text-primary">Source Column</h2>
-            </div>
-            <div class="col-8">
-                @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new { @class = "form-control" })
-            </div>
-        </div>
-        <div class="row pt-6">
-            <div class="col-4">
-                <h2 class="text-primary">Destination Column</h2>
-            </div>
-            <div class="col-8">
-                @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), new { @class = "form-control" })
-            </div>
-        </div>
+    <div class="row pt-6">
+    <div class="col-4">
+    <h2 class="text-primary">Source Column</h2>
     </div>
-}*@
-
+    <div class="col-8">
+    @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new { @class = "form-control" })
+    </div>
+    </div>
+    <div class="row pt-6">
+    <div class="col-4">
+    <h2 class="text-primary">Destination Column</h2>
+    </div>
+    <div class="col-8">
+    @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), new { @class = "form-control" })
+    </div>
+    </div>
+    </div>
+    }*@
+@Html.Hidden("HiddenId",Model.mapTables.Count)
+@Html.Hidden("HiddenId2","")
 <div class="row pt-12" style="border:none;padding-top:10px;">
     <table class="table table-bordered">
         <thead>
@@ -42,12 +43,15 @@
             {
                 <tr>
                     <td>
-                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new { @class = "form-control" })
+                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new {@id = "Id"+i, @class = "form-control"})
+@*                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new {@id = "Id"+i, @class = "form-control",@onchange = "test3("+i+","+ Model.mapTables.Count +")"  })
+*@
                     </td>
                     <td>
                         @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), new { @class = "form-control" })
                     </td>
                 </tr>
+
             }
         </tbody>
     </table>
@@ -68,3 +72,30 @@
     <button type="reset" class="btn btn-warning" style="width:150px;" onclick="location.href='@Url.Action("Reset", "Mapping")'"> Reset </button>
     //<button type="reset" class="btn btn-warning" style="width:150px;" >Reset</button>
 }
+
+@*<script>
+    function test3(e,c) {
+
+    var a= $("#HiddenId2").val();
+    $("#HiddenId2").val(a+','+e)
+    var form = $("#id");
+    console.log(e);
+    console.log(a);
+    var hv = $('#HiddenId').val();
+    for(var i=e+1 ;i<=c ;i++)
+    {
+    $('#Id'+i+' > option:not(:first)').remove();
+    $("#Id"+i).append($("<option></option>").val("11111").html("222222"));
+    $("#Id"+i).append($("<option></option>").val("11111").html("222222"));
+    $("#Id"+i).append($("<option></option>").val("11111").html("222222"));
+    $("#Id"+i).append($("<option></option>").val("11111").html("222222"));
+
+    }
+    var id = $('#id').val();;
+    console.log(id);
+    console.log(hv);
+    //var currentIndexP = posteElement.get(0).selectedIndex, currentIndexD = dd.get(0).selectedIndex;
+    //console.log(currentIndexP);
+    //if (currentIndexP == currentIndexD) dd.find('option').eq(currentIndexD).remove();
+    }
+    </script>*@
