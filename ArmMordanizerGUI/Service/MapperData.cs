@@ -299,10 +299,13 @@ namespace ArmMordanizerGUI.Service
             string finalSQL = "";
             foreach (var item in obj.mapTables)
             {
-                if (item.targetColumn != null)
+                if (item.targetColumn != null && item.sourceColumn != null)
+                {
                     selectSQl = selectSQl + item.targetColumn + ",";
-                if (item.sourceColumn != null)
                     valuesSql = valuesSql + item.sourceColumn + ",";
+                }
+                //if (item.sourceColumn != null && item.targetColumn != null)
+                //valuesSql = valuesSql + item.sourceColumn + ",";
             }
 
             selectSQl = selectSQl.Remove(selectSQl.Length - 1, 1);

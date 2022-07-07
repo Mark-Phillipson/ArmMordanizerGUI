@@ -49,8 +49,8 @@ namespace ArmMordanizerGUI.Controllers
                     continue;
                 else if (item.sourceColumn == null && item.targetColumn == null)
                     continue;
-                else
-                    msg = "Source and Destination Column Mapping Missing";
+                //else
+                //    msg = "Source and Destination Column Mapping Missing";
                 if (item.SourceColumnType != item.TargetColumnType)
                     msg = "Source and Destination Column Type Does Not Match";
             }

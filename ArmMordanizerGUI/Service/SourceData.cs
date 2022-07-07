@@ -44,7 +44,7 @@ namespace ArmMordanizerGUI.Service
                     Value = x.ColumnName
                 }
                 ).ToList();
-                objSourceList.Insert(0, new SelectListItem() { Value = "", Text = "-- Please select your Column --" });
+                objSourceList.Insert(0, new SelectListItem() { Value = "", Text = "<ignore>" });
                 return objSourceList;
             }
             catch (Exception ex)
