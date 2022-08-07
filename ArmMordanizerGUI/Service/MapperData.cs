@@ -190,7 +190,9 @@ namespace ArmMordanizerGUI.Service
         {
             string folderLocation = "";
             string connString = this.Configuration.GetConnectionString("DefaultConnection");
-            string sql = "Select PropertyValue from [SystemGlobalProperties] WHERE [PropertyName] = @propertyName";
+            //string sql = "Select PropertyValue from [SystemGlobalProperties] WHERE [PropertyName] = @propertyName";
+            string sql = "select [dbo].[fnGlobalProperty](@propertyName) AS PropertyValue";
+
             try
             {
                 using (SqlConnection conn = new SqlConnection(connString))
