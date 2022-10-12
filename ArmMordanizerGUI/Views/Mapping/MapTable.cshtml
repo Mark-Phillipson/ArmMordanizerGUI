@@ -12,8 +12,9 @@
                     <label class="text-primary">Select Source Table</label>
                 </div>
                 <div class="col-md-8">
-                    @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-select"})
+                    @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-select",onchange="SourceSelectedIndexChanged()"})
                 </div>
+                <input type="hidden" id="HiddenSourceTableName" name="HiddenSourceTableName" />
 
             </div>
         </div>
@@ -23,27 +24,40 @@
                     <label class="text-primary">Select Destination Table</label>
                 </div>
                 <div class="col-md-8">
-                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-select",onchange = "SelectedIndexChanged()" })
+                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-select",@disabled="disabled" ,onchange = "SelectedIndexChanged()" })
 
                     @* @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "document.location.href = '/Mapping/DestinationTableddlChange?obj=' + m;" })
-                        @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "SelectedIndexChanged" })
-                        @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Destination Table")*@
+                    @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "SelectedIndexChanged" })
+                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Destination Table")*@
 
                 </div>
             </div>
         </div>
-@*        <div class="col-md-6">
-            <div class="row">
-                <div class="col-md-4">
-                    <label class="text-primary">Select Re Use Option</label>
-                </div>
-                <div class="col-md-8">
-                    @Html.DropDownListFor(m=>m.reUseValue, new SelectList(Model.reUseConfiguration, "Text", "Value"),new {@class = "form-control", onchange = "SelectedIndexChanged()" })
-                </div>
-            </div>
+        @*        <div class="col-md-6">
+        <div class="row">
+        <div class="col-md-4">
+        <label class="text-primary">Select Re Use Option</label>
+        </div>
+        <div class="col-md-8">
+        @Html.DropDownListFor(m=>m.reUseValue, new SelectList(Model.reUseConfiguration, "Text", "Value"),new {@class = "form-control", onchange = "SelectedIndexChanged()" })
+        </div>
+        </div>
         </div>*@
     </div>
-
+    <div id="main-element" class="hidden">
+        <strong> Sample of Data</strong>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="Show()">Show</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="Hide()">Hide</button>
+        <div id="collapse-area" class="collapse">
+            <div id="sample-data-source"> </div>
+            <div id="sample-data-destination"> </div>
+        </div>
+    </div>
+    <div id="loading" class="hidden">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        </div>
     <div id="mypartial"> </div>
 
 
@@ -51,24 +65,73 @@
 </form>
 
 <script>
-             function SelectedIndexChanged() {
-                 console.log("Test");
-             //var selectedVal = document.getElementById("SrcTable").value;
-             var a = document.getElementById("sourceTableName").value;
-             var b = document.getElementById("destinationTableName").value;
-             console.log(a);
-             console.log(b);
-    var url = "@Url.Action("MapPartial","Mapping")";
+    function SourceSelectedIndexChanged() {
+        var url = "@Url.Action("ShowSampleData","Mapping")";
 
-     var model = { SrcTableName :document.getElementById("sourceTableName").value,
-                   DesTableName:document.getElementById("destinationTableName").value
-                   //,
-                   //ReUseValue:document.getElementById("reUseValue").value
-                 };
+        var model = {
+            tableName: document.getElementById("sourceTableName").value,
+        };
+        $('#HiddenSourceTableName').val(model.tableName);
+        $.post(url, model, function (res) {
+            console.log(res);
+            $("#sample-data-source").html(res);
+        });
+        $('#destinationTableName').prop('disabled', false).focus();
 
-     $.post(url, model, function(res){
+        $('#sourceTableName').prop('disabled', true);
+        $('#main-element').removeClass("hidden");
 
-        $("#mypartial").html(res);
-     });
-             }
+
+    }
+    function SelectedIndexChanged() {
+        $('#loading').removeClass('hidden');
+        var url = "@Url.Action("ShowSampleData","Mapping")";
+
+        var model = {
+            tableName: document.getElementById("destinationTableName").value
+        };
+
+        $.post(url, model, function (res) {
+            console.log(res);
+            $("#sample-data-destination").html(res);
+        });
+
+
+        var url = "@Url.Action("MapPartial","Mapping")";
+
+        var model = {
+            SrcTableName: document.getElementById("sourceTableName").value,
+            DesTableName: document.getElementById("destinationTableName").value
+        };
+
+        $.post(url, model, function (res) {
+
+            $("#mypartial").html(res);
+            $('#loading').addClass('hidden');
+        });
+    }
+    function Hide() {
+        $('#collapse-area').addClass('collapse');
+    }
+    function Show() {
+        $("#collapse-area").removeClass("collapse")
+    }
+    function SourceFieldNameChanged(id) {
+        var url = "@Url.Action("ValidateColumns","Mapping")";
+
+        var model = {
+            sourceTablename: document.getElementById("sourceTableName").value,
+            destinationTablename: document.getElementById("destinationTableName").value,
+            sourceField: document.getElementById("SourceId" + id).value,
+            destinationField: document.getElementById("DestinationId" + id).value,
+            id: id
+        };
+
+        $.post(url, model, function (res) {
+
+            $("#status" + id).html(res);
+        });
+
+    }
+
 </script>

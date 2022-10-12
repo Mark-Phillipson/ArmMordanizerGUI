@@ -6,6 +6,7 @@
         public string? targetColumn { get; set; }
         public string? SourceColumnType { get; set; }
         public string? TargetColumnType { get; set; }
-        
+        public string? Status { get; set; }
+
     }
 }

@@ -36,6 +36,7 @@
             <tr>
                 <th class="text-primary text-center">Source Table</th>
                 <th class="text-primary text-center">Destination Table</th>
+                <th class="text-primary text-center">Status</th>
             </tr>
         </thead>
         <tbody>
@@ -43,12 +44,18 @@
             {
                 <tr>
                     <td>
-                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new {@id = "Id"+i, @class = "form-select"})
-@*                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new {@id = "Id"+i, @class = "form-control",@onchange = "test3("+i+","+ Model.mapTables.Count +")"  })
-*@
+                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new {@id = "SourceId"+i, @class = "form-select",onchange="SourceFieldNameChanged("+i+")"})
+                        @*                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new {@id = "Id"+i, @class = "form-control",@onchange = "test3("+i+","+ Model.mapTables.Count +")"  })
+                    *@
                     </td>
                     <td>
-                        @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), new { @class = "form-select" })
+                        @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), new { @id="DestinationId"+i, @class = "form-select",onchange="SourceFieldNameChanged("+i+")" })
+                    </td>
+                    <td  style="color:white" class="p-3">
+                        @if (Model.mapTables[i].Status != null)
+                        {
+                            <div id="status@(i)"><span>@Html.Raw(@Model.mapTables[i].Status)</span></div>
+                        }
                     </td>
                 </tr>
 

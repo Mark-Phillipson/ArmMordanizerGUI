@@ -45,7 +45,8 @@ namespace ArmMordanizerGUI.Service
                 Value = x.ColumnName
             }
             ).ToList();
-            objDestinationList.Insert(0, new SelectListItem() { Value = "", Text = "<ignore>" });
+
+            //objDestinationList.Insert(0, new SelectListItem() { Value = "", Text = "<ignore>" });
             return objDestinationList;
         }
 

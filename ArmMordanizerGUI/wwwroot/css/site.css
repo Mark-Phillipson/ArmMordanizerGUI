@@ -18,3 +18,10 @@ body {
     /*background-color: white !important;*/
 /*    background-color: rgb(28, 43, 54) !important;*/
 }
+
+.collapse {
+    display:none;
+}
+.hidden {
+    display:none;
+}

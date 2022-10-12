@@ -1,4 +1,6 @@
 using ArmMordanizerGUI.Data;
+using ArmMordanizerGUI.Service;
+
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
     builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+builder.Services.AddScoped<DatabaseMetaDataService>();
 
 var app = builder.Build();
 

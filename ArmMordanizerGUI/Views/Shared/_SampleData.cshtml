@@ -1,0 +1,85 @@
+﻿@using System.Data
+@using ArmMordanizerGUI.Models
+@{
+
+}
+
+@if (ViewBag.Columns == null)
+{
+    <h6> Error loading columns</h6>
+}
+else
+{
+
+        <Strong>@ViewBag.TableName</Strong> <span class="text-info"> Note second row is data types and the third row is the largest/longest value, with length in brackets. 
+            @if (ViewBag.RecordCount>= 10)
+            {
+                <text>Showing 10 records of @ViewBag.RecordCount</text>
+            }
+            </span>
+        <table style="font-size:x-small" class="table table-bordered table-striped" id="table1">
+            <thead>
+                <tr>
+                @foreach (ARMDatabaseColumn column in ViewBag.Columns)
+                    {
+                        <th>@column.Label </th>
+                    }
+                </tr>
+                <tr>
+                @foreach (ARMDatabaseColumn column in ViewBag.Columns)
+                    {
+                        <td class="text-info">@column.DataTypeFriendly </td>
+                    }
+
+                </tr>
+                <tr>
+                    @foreach (ARMDatabaseColumn column in ViewBag.Columns)
+                    {
+                        <td class="text-info">@column.LargestValue </td>
+                    }
+
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model?.Rows != null)
+                {
+
+                    @foreach (DataRow row in Model.Rows)
+                    {
+                        <tr>
+
+                            @foreach (var col in ViewBag.Columns)
+                            {
+                                if (col.DataType.ToLower() == "int" || col.DataType.ToLower() == "decimal"
+                                || col.DataType.ToLower() == "bigint")
+                                {
+                                    <td class="text-info" style="align-items:center">@row[col.ColumnName].ToString()</td>
+                                }
+                                else if (col.DataType.ToLower() == "bit")
+                                {
+                                    <td style="align-items:center">
+                                        @if (row[col.ColumnName].ToString() == "True")
+                                        {
+                                            <span class="badge bg-success">True</span>
+                                        }
+                                        else if (row[col.ColumnName].ToString() == "False")
+                                        {
+                                            <span class="badge bg-info">False</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Undefined</span>
+                                        }
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>@row[col.ColumnName].ToString()</td>
+                                }
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+}

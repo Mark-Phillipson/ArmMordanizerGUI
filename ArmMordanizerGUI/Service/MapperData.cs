@@ -85,6 +85,10 @@ namespace ArmMordanizerGUI.Service
 
         internal bool IsSrcDesExists(string sourceTableName, string destinationTableName)
         {
+            if (sourceTableName== null ||destinationTableName== null )
+            {
+                return false;
+            }
             try
             {
                 bool isExists;
@@ -118,6 +122,10 @@ namespace ArmMordanizerGUI.Service
 
         internal void MoveFileToReUpload(string sourceTableName)
         {
+            if (sourceTableName==  null )
+            {
+                throw new ArgumentNullException(nameof(sourceTableName));
+            }
             string fileName = GetFileName(sourceTableName.Split(new string[] { "." }, StringSplitOptions.None).Last());
 
             string fileLocationForReupload = GetFileLocation(fileLocationForReUploadPropertyName);
