@@ -5,6 +5,7 @@ using MessagePack.Formatters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 
+using System.Data;
 using System.Data.Common;
 
 namespace ArmMordanizerGUI.Service
@@ -323,7 +324,7 @@ namespace ArmMordanizerGUI.Service
                     else
                     {
                         preventDuplicate = true;
-                        valuesSql = $"{valuesSql} CASE WHEN a.rc>1 THEN CONCAT({item.sourceColumn}, ' - ',a.rc) WHEN a.rc=1 THEN a.{item.sourceColumn} END AS {item.sourceColumn},";
+                        valuesSql = $"{valuesSql}CASE WHEN a.rc>1 THEN CONCAT({item.sourceColumn}, ' - ',a.rc) WHEN a.rc=1 THEN a.{item.sourceColumn} END AS {item.sourceColumn},";
                     }
                 }
             }
@@ -357,33 +358,41 @@ namespace ArmMordanizerGUI.Service
             return finalSQL;
         }
 
-        public List<MapTable> GetConfiguarationData(string srcTableName, string desTableName)
+        public (List<MapTable>, bool PurgeBeforeInsert) GetConfiguarationData(string srcTableName, string desTableName)
         {
             List<MapTable> list = new List<MapTable>();
             try
             {
-                string existingSql;
+                string existingSql = "";
                 string connString = this.Configuration.GetConnectionString("DefaultConnection");
 
                 SqlConnection con = new SqlConnection(connString);
-
-                string sql = "SELECT SQL FROM MapperConfiguration WHERE SourceTable = @SourceTable AND DestinationTable = @DestinationTable AND IsActive = 1";
+                SqlDataReader? sqlDataReader = null;
+                string sql = $"SELECT SQL, PurgeBeforeInsert FROM MapperConfiguration WHERE SourceTable = '{srcTableName}' AND DestinationTable = '{desTableName}' AND IsActive = 1";
 
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {
-                    cmd.Parameters.AddWithValue("@SourceTable", srcTableName);
-                    cmd.Parameters.AddWithValue("@DestinationTable", desTableName);
+                    //cmd.Parameters.AddWithValue("@SourceTable", srcTableName);
+                    //cmd.Parameters.AddWithValue("@DestinationTable", desTableName);
 
                     con.Open();
-                    existingSql = (string)cmd.ExecuteScalar();
-                    con.Close();
+                    cmd.CommandType = CommandType.Text;
+                    sqlDataReader = cmd.ExecuteReader(CommandBehavior.SingleRow);
                 }
+                var dataTable = new DataTable();
+                if (sqlDataReader != null)
+                    dataTable.Load(sqlDataReader);
+                DataRow row = dataTable.Rows[0];
+                existingSql = row.Field<string>("SQL") ?? "";
                 list = GetMapTableInfo(existingSql);
-                return list;
+                bool purgeBeforeInsert = row.Field<bool>("PurgeBeforeInsert");
+                con.Close();
+                return (list, purgeBeforeInsert);
             }
             catch (Exception ex)
             {
-                throw ex;
+                Console.WriteLine(ex.Message);
+                throw ;
             }
         }
 
@@ -402,13 +411,18 @@ namespace ArmMordanizerGUI.Service
             string[] desTemp = data[0].Split(new[] { "(" }, StringSplitOptions.None);
             desTemp[1] = desTemp[1].Replace("&nbsp;", " ").Replace(")", "").Replace("\r", "").Replace("\n", "");
             desTemp = desTemp[1].Split(new[] { "," }, StringSplitOptions.None);
-
+            int count = 0;
             string[] srcTemp = data[1].Split(new[] { "FROM" }, StringSplitOptions.None);
             if (containsPartitionBy)
             {
-                string[] temporary = data[1].Split(new[] { "END AS" }, StringSplitOptions.TrimEntries);
-                temporary[1]=temporary[1].Replace("FROM (", "").Replace("a.","");
-                srcTemp = temporary[1].Split(new[] { "," }, StringSplitOptions.TrimEntries);
+                var fields = "";
+                string[] temporary = data[1].Split(new[] { "CASE WHEN" }, StringSplitOptions.TrimEntries);
+                fields = temporary[0];
+                count = fields.Count(c => c == ',');
+                string[] temporary2 = temporary[1].Split(new[] { "END AS" }, StringSplitOptions.TrimEntries);
+                fields = $"{fields}{temporary2[1]}";
+                fields = fields.Replace("FROM (", "").Replace("a.", "");
+                srcTemp = fields.Split(new[] { "," }, StringSplitOptions.TrimEntries);
             }
             else
             {
@@ -420,6 +434,14 @@ namespace ArmMordanizerGUI.Service
                 MapTable obj = new MapTable();
                 obj.sourceColumn = srcTemp[i].Trim();
                 obj.targetColumn = desTemp[i].Trim();
+                if ((count) == i)
+                {
+                    obj.PreventDuplicates = true;
+                }
+                else
+                {
+                    obj.PreventDuplicates = false;
+                }
                 mapTableList.Add(obj);
             }
 
@@ -435,6 +457,7 @@ namespace ArmMordanizerGUI.Service
                 MapTable mapTable = new MapTable();
                 mapTable.sourceColumn = objColumn.sourceColumn;
                 mapTable.targetColumn = objColumn.targetColumn;
+                mapTable.PreventDuplicates = objColumn.PreventDuplicates;
                 objMapList.Add(mapTable);
             }
             int count = objMapList.Count;

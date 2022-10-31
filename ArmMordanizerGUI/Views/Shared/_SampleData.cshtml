@@ -35,7 +35,14 @@ else
                 <tr>
                     @foreach (ARMDatabaseColumn column in ViewBag.Columns)
                     {
-                        <td class="text-info">@column.LargestValue </td>
+                        <td 
+                            class="text-info">@column.LargestValue 
+                            @if (column.HasNulls)
+                        {
+                            <span class="text-danger">(Has Null or Empty Values)</span>
+                        }
+
+                        </td>
                     }
 
                 </tr>

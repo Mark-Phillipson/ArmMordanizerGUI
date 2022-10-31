@@ -16,7 +16,7 @@
         <div class="col-md-4">
             <div class="row">
                 <div class="col-md-5">
-                    <label class="text-primary">Select Source Table</label>
+                    <label class="text-primary">Source</label>
                 </div>
                 <div class="col-md-7">
                     @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-select",onchange="SourceSelectedIndexChanged()"})
@@ -24,21 +24,21 @@
                 <input type="hidden" id="HiddenSourceTableName" name="HiddenSourceTableName" />
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="row">
+        <div class="col-md-2">
+            <div title="List Only Used Columns in the drop-downs" class="row">
                 <div class="col-md-10">
-                    <label class="text-primary">List Only Used Columns</label>
+                    <label class="text-primary">List Only Used</label>
                 </div>
                 <div class="col-md-2">
-                    <input type="checkbox" name="ListOnlyUsedColumns" id="ListOnlyUsedColumns" checked onchange="SelectedIndexChanged()" />
+                    <input type="checkbox" name="ListOnlyUsedColumns" id="ListOnlyUsedColumns" checked onchange="SelectedIndexChanged()"/>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-5">
+        <div class="col-md-4">
             <div class="row">
                 <div class="col-md-5">
-                    <label class="text-primary">Select Destination Table</label>
+                    <label class="text-primary">Destination</label>
                 </div>
                 <div class="col-md-7">
                     @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-select",@disabled="disabled" ,onchange = "SelectedIndexChanged()" })
@@ -50,6 +50,7 @@
                 </div>
             </div>
         </div>
+
         @*        <div class="col-md-6">
         <div class="row">
         <div class="col-md-4">

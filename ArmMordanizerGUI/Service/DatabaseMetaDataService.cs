@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 using System;
 using System.Collections.Generic;
@@ -55,7 +56,7 @@ namespace ArmMordanizerGUI.Service
                 column.PropertyName = StringHelperService.RemoveUnsupportedCharacters(column.ColumnName ?? "").Replace("ID", "Id");
                 string? largestValue = GetLargestValue(column, tablename);
                 column.LargestValue = $"{largestValue} ({largestValue?.Length})";
-
+                column.HasNulls = HasNulls(column, tablename);
                 columns.Add(column);
             }
             return columns.ToList();
@@ -107,7 +108,28 @@ namespace ArmMordanizerGUI.Service
             //string? result = dataRow[column.ColumnName].ToString();
             return result;
         }
+        private bool HasNulls(ARMDatabaseColumn column, string tablename)
+        {
+            using (var sqlCon = new SqlConnection(_connectionString))
+            {
+                sqlCon.Open();
+                var sqlCmd = sqlCon.CreateCommand();
+                var sqlText = "";
+                if (column.DataType?.ToLower() == "nvarchar")
+                {
+                    sqlText = $"select Count (*) from {tablename} WHERE {tablename}.{column.ColumnName} IS NULL OR {tablename}.{column.ColumnName}=''";
+                }
+                else
+                {
+                    sqlText = $"select Count (*) from {tablename} WHERE {tablename}.{column.ColumnName} IS NULL ";
 
+                }
+                sqlCmd.CommandType = CommandType.Text;
+                sqlCmd.CommandText = sqlText;
+                int rows = (int)sqlCmd.ExecuteScalar();
+                return rows > 0;
+            }
+        }
         public DataTable GetDataIntoDataTable(string sql, string? searchTerm = null, string db = "ARM_CORE", int maxRows = 10)
         {
             using (var sqlCon = new SqlConnection(_connectionString))

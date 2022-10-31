@@ -39,6 +39,7 @@
         public bool DisplayInDataTable { get; set; } = true;
         public bool Searchable { get; set; } = false;
         public bool Hide { get; set; }
-         public  string? LargestValue { get; set; }
+        public string? LargestValue { get; set; }
+        public bool HasNulls { get; set; }
     }
 }

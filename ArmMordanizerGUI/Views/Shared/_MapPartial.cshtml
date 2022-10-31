@@ -30,6 +30,17 @@
     }*@
 @Html.Hidden("HiddenId",Model.mapTables.Count)
 @Html.Hidden("HiddenId2","")
+<div class="col-md-2">
+    <div title="Tick the box if you wish to remove records in the destination table before appending new ones." class="row">
+        <div class="col-md-10">
+            <label class="text-primary">Purge Before Insert</label>
+        </div>
+        <div class="col-md-2">
+            @Html.CheckBoxFor(m => m.PurgeBeforeInsert)
+        </div>
+    </div>
+</div>
+
 <div class="row pt-12" style="border:none;padding-top:10px;">
     <table class="table table-bordered">
         <thead>

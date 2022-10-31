@@ -129,10 +129,11 @@ namespace ArmMordanizerGUI.Controllers
             }
             else
             {
-                List<MapTable> objMapTable = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
+                (List<MapTable> objMapTable, bool purgeBeforeInsert) = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
                 mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable, listOnlyUsedColumns);
                 mapper.sourceTableName = SrcTableName;
                 mapper.destinationTableName = desTableName;
+                mapper.PurgeBeforeInsert = purgeBeforeInsert;
             }
             var mapTables = mapper.mapTables;
             foreach (MapTable item in mapTables)
