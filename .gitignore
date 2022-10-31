@@ -31,7 +31,8 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-
+bin/
+obj/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
@@ -433,3 +434,4 @@ FodyWeavers.xsd
 /ArmMordanizerGUI/obj/ArmMordanizerGUI.csproj.nuget.g.targets
 /ArmMordanizerGUI/obj/project.assets.json
 /ArmMordanizerGUI/obj/project.nuget.cache
+/ArmMordanizerGUI/obj/Debug/net6.0/apphost.exe
