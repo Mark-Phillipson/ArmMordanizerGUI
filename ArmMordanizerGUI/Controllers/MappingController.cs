@@ -30,9 +30,6 @@ namespace ArmMordanizerGUI.Controllers
             _sourceData = new SourceData(_configuration);
             _destinationData = new DestinationData(_configuration);
         }
-
-
-
         public IActionResult MapTable()
         {
             Mapper mapper = new Mapper();
@@ -48,7 +45,8 @@ namespace ArmMordanizerGUI.Controllers
         {
             obj.sourceTableName = obj.HiddenSourceTableName;
             string? msg = null;
-            if (msg != null)
+            msg = _mapperData.CheckForDuplicates(obj.mapTables);
+            if (msg != null && msg.Length > 0)
             {
                 TempData["message"] = msg;
                 return RedirectToAction("MapTable", "Mapping");
@@ -59,17 +57,17 @@ namespace ArmMordanizerGUI.Controllers
                 if (isExists)
                 {
                     msg = _mapperData.UpdateMappingData(obj);
-
                 }
                 else
                 {
                     msg = _mapperData.Save(obj);
                 }
-               
-                _mapperData.MoveFileToReUpload(obj.sourceTableName);
 
+                _mapperData.MoveFileToReUpload(obj.sourceTableName);
+                obj.destinationTableName = "dbo.Stock";
 
                 TempData["message"] = msg;
+
                 return RedirectToAction("MapTable", "Mapping");
             }
         }
@@ -97,10 +95,10 @@ namespace ArmMordanizerGUI.Controllers
         public IActionResult ShowSampleData(string tableName)
         {
             var sql = $"SELECT * FROM {tableName}";
-            IEnumerable<ARMDatabaseColumn>? columns = _databaseMetaDataService.GetColumnNamesFromSql(sql,tableName);
+            IEnumerable<ARMDatabaseColumn>? columns = _databaseMetaDataService.GetColumnNamesFromSql(sql, tableName);
             DataTable dataTable = _databaseMetaDataService.GetDataIntoDataTable(sql);
             var recordCount = _databaseMetaDataService.GetRecordCount(tableName);
-            ViewBag.RecordCount=recordCount;
+            ViewBag.RecordCount = recordCount;
             if (columns != null)
             {
                 ViewBag.Columns = columns.ToList();
@@ -111,8 +109,8 @@ namespace ArmMordanizerGUI.Controllers
             return result;
 
         }
-        [HttpPost]
-        public IActionResult MapPartial(string SrcTableName, string desTableName)
+
+        public IActionResult MapPartial(string SrcTableName, string desTableName, bool listOnlyUsedColumns)
         {
             Mapper mapper = new Mapper();
             List<SelectListItem> objDestinationList = _destinationData.GetDestinationData(desTableName);
@@ -125,14 +123,14 @@ namespace ArmMordanizerGUI.Controllers
             if (!isExists)
             {
                 TempData["message"] = null;
-                mapper = _mapperData.GetMapper(objDestinationList, objSourceList);
+                mapper = _mapperData.GetMapper(objDestinationList, objSourceList, listOnlyUsedColumns);
                 mapper.sourceTableName = SrcTableName;
                 mapper.destinationTableName = desTableName;
             }
             else
             {
                 List<MapTable> objMapTable = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
-                mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable);
+                mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable, listOnlyUsedColumns);
                 mapper.sourceTableName = SrcTableName;
                 mapper.destinationTableName = desTableName;
             }
@@ -153,6 +151,22 @@ namespace ArmMordanizerGUI.Controllers
         {
             TempData["message"] = null;
             return RedirectToAction("MapTable", "Mapping");
+
+        }
+        [HttpGet]
+        public FileStreamResult? CreateSqlFile(string sourceTable,string destinationTable)
+        {
+            string name = $"InsertIntoStatement.sql";
+            string sql = "Testing";
+
+
+            FileInfo info = new FileInfo(name);
+
+            using (StreamWriter writer = info.CreateText())
+            {
+                writer.WriteLine(sql);
+            }
+            return File(info.OpenRead(), "text/plain");
 
         }
 

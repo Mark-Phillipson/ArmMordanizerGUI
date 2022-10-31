@@ -14,5 +14,6 @@ namespace ArmMordanizerGUI.Models
         public string destinationTableName { get; set; }
         public SelectList reUseConfiguration { get; set; }
         public int reUseValue { get; set; }
+         public  bool ReloadPartial { get; set; }=false;
     }
 }

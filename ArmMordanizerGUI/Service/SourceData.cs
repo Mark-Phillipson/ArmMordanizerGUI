@@ -44,7 +44,7 @@ namespace ArmMordanizerGUI.Service
                     Value = x.ColumnName
                 }
                 ).ToList();
-                objSourceList.Insert(0, new SelectListItem() { Value = "", Text = "<ignore>" });
+                objSourceList.Insert(0, new SelectListItem() { Value = "<ignore>", Text = "<ignore>" });
                 return objSourceList;
             }
             catch (Exception ex)
@@ -85,9 +85,9 @@ namespace ArmMordanizerGUI.Service
                 ).ToList();
                 return objSourceTableList;
             }
-            catch (Exception ex)
+            catch (Exception )
             {
-                throw ex;
+                throw ;
             }
         }
     }

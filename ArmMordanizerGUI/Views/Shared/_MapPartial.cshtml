@@ -37,25 +37,31 @@
                 <th class="text-primary text-center">Source Table</th>
                 <th class="text-primary text-center">Destination Table</th>
                 <th class="text-primary text-center">Status</th>
+                <th class="text-primary text-center">Prevent Duplicates</th>
             </tr>
         </thead>
         <tbody>
             @for (i = 0; i < Model.mapTables.Count; i++)
             {
+                SelectList? source = Model.mapTables[i].SourceColumns;
+                SelectList? destination = Model.mapTables[i].TargetColumns;
                 <tr>
                     <td>
-                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new {@id = "SourceId"+i, @class = "form-select",onchange="SourceFieldNameChanged("+i+")"})
+                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, source , new {@id = "SourceId"+i, @class = "form-select",onchange="SourceFieldNameChanged("+i+")"})
                         @*                        @Html.DropDownListFor(m => m.mapTables[i].sourceColumn, new SelectList(Model.sourceSelectList, "Text", "Value"), new {@id = "Id"+i, @class = "form-control",@onchange = "test3("+i+","+ Model.mapTables.Count +")"  })
                     *@
                     </td>
                     <td>
-                        @Html.DropDownListFor(m => m.mapTables[i].targetColumn, new SelectList(Model.desTinationSelectList, "Text", "Value"), new { @id="DestinationId"+i, @class = "form-select",onchange="SourceFieldNameChanged("+i+")" })
+                        @Html.DropDownListFor(m => m.mapTables[i].targetColumn, destination, new { @id="DestinationId"+i, @class = "form-select",onchange="SourceFieldNameChanged("+i+")" })
                     </td>
                     <td  style="color:white" class="p-3">
                         @if (Model.mapTables[i].Status != null)
                         {
                             <div id="status@(i)"><span>@Html.Raw(@Model.mapTables[i].Status)</span></div>
                         }
+                    </td>
+                    <td title="Prevent duplicates by appending the row number of the duplicate.">
+                        @Html.CheckBoxFor(m => m.mapTables[i].PreventDuplicates, new {@class="prevent-duplicates"})
                     </td>
                 </tr>
 
@@ -72,14 +78,19 @@
 }
 @if (Model.mapTables.Count > 0)
 {
-    <button type="submit" class="btn btn-outline-primary btn-lg">Create</button>
+    <button type="submit" class="btn btn-outline-primary btn-lg">Submit</button>
 }
 @if (Model.mapTables.Count > 0)
 {
     <button type="reset" class="btn btn-outline-secondary btn-lg" onclick="location.href='@Url.Action("Reset", "Mapping")'"> Reset </button>
     //<button type="reset" class="btn btn-warning" style="width:150px;" >Reset</button>
 }
+<script>
+    $('.prevent-duplicates').on('click',function() {
+        $('.prevent-duplicates').not(this).prop('checked', false);
+    });
 
+</script>
 @*<script>
     function test3(e,c) {
 

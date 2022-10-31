@@ -1,6 +1,11 @@
 ﻿using ArmMordanizerGUI.Models;
+
+using MessagePack.Formatters;
+
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
+
+using System.Data.Common;
 
 namespace ArmMordanizerGUI.Service
 {
@@ -16,7 +21,7 @@ namespace ArmMordanizerGUI.Service
             Configuration = _configuration;
 
         }
-        internal Mapper GetMapper(List<SelectListItem> objDestinationList1, List<SelectListItem> objSourceList)
+        internal Mapper GetMapper(List<SelectListItem> objDestinationList1, List<SelectListItem> objSourceList, bool listOnlyUsedColumns)
         {
             List<MapTable> objMapList = new List<MapTable>();
             foreach (var objColumn in objDestinationList1)
@@ -30,9 +35,12 @@ namespace ArmMordanizerGUI.Service
                 }
                 else
                 {
-                    mapTable.sourceColumn = "";
+                    mapTable.sourceColumn = "<ignore>";
                     mapTable.targetColumn = objColumn.Text;
                 }
+                mapTable.SourceColumns = BuildIndividualSelectList(objMapList, objSourceList, "source", mapTable.sourceColumn, listOnlyUsedColumns);
+
+                mapTable.TargetColumns = BuildIndividualSelectList(objMapList, objDestinationList1, "destination", mapTable.targetColumn, listOnlyUsedColumns);
 
                 objMapList.Add(mapTable);
             }
@@ -71,21 +79,17 @@ namespace ArmMordanizerGUI.Service
                     cmd.ExecuteNonQuery();
                     con.Close();
                 }
-                return "Data Saved Successfull.";
+                return $"Data Saved Successfull.  {sql}";
             }
             catch (Exception ex)
             {
                 return "Database Insertion failed. Please See the exception Message" + ex.Message.ToString();
             }
-
-
-
-
         }
 
         internal bool IsSrcDesExists(string sourceTableName, string destinationTableName)
         {
-            if (sourceTableName== null ||destinationTableName== null )
+            if (sourceTableName == null || destinationTableName == null)
             {
                 return false;
             }
@@ -122,7 +126,7 @@ namespace ArmMordanizerGUI.Service
 
         internal void MoveFileToReUpload(string sourceTableName)
         {
-            if (sourceTableName==  null )
+            if (sourceTableName == null)
             {
                 throw new ArgumentNullException(nameof(sourceTableName));
             }
@@ -246,9 +250,7 @@ namespace ArmMordanizerGUI.Service
             {
                 throw ex;
             }
-
         }
-
         public string UpdateMappingData(Mapper obj)
         {
             string connString = this.Configuration.GetConnectionString("DefaultConnection");
@@ -283,7 +285,7 @@ namespace ArmMordanizerGUI.Service
                     }
                     transaction.Commit();
                     conn.Close();
-                    return "Data Saved Successfull.";
+                    return $"Data Saved Successfull.  {sql}";
                 }
                 catch (Exception ex)
                 {
@@ -307,23 +309,50 @@ namespace ArmMordanizerGUI.Service
             string selectSQl = "INSERT INTO " + obj.destinationTableName + " (";
             string valuesSql = "SELECT ";
             string finalSQL = "";
+            bool preventDuplicate = false;
             foreach (var item in obj.mapTables)
             {
-                if (item.targetColumn != null && item.sourceColumn != null)
+                if (item.targetColumn != null && item.sourceColumn != null && item.targetColumn != "<ignore>" && item.sourceColumn != "<ignore>")
                 {
                     selectSQl = selectSQl + item.targetColumn + ",";
-                    valuesSql = valuesSql + item.sourceColumn + ",";
+
+                    if (item.PreventDuplicates == false)
+                    {
+                        valuesSql = $"{valuesSql} a.{item.sourceColumn},";
+                    }
+                    else
+                    {
+                        preventDuplicate = true;
+                        valuesSql = $"{valuesSql} CASE WHEN a.rc>1 THEN CONCAT({item.sourceColumn}, ' - ',a.rc) WHEN a.rc=1 THEN a.{item.sourceColumn} END AS {item.sourceColumn},";
+                    }
                 }
-                //if (item.sourceColumn != null && item.targetColumn != null)
-                //valuesSql = valuesSql + item.sourceColumn + ",";
             }
 
             selectSQl = selectSQl.Remove(selectSQl.Length - 1, 1);
-            selectSQl = selectSQl + ")" + System.Environment.NewLine;
+            selectSQl = selectSQl + ") ";
 
             valuesSql = valuesSql.Remove(valuesSql.Length - 1, 1);
-            valuesSql = valuesSql + " FROM " + obj.sourceTableName;
-
+            string subQuerySql = " FROM ( SELECT "; string partitionByCode = "";
+            if (preventDuplicate == false)
+            {
+                valuesSql = valuesSql + " FROM " + obj.sourceTableName + " a";
+            }
+            else
+            {
+                foreach (var item in obj.mapTables)
+                {
+                    if (item.targetColumn != null && item.sourceColumn != null && item.targetColumn != "<ignore>" && item.sourceColumn != "<ignore>")
+                    {
+                        subQuerySql = $"{subQuerySql} {item.sourceColumn},";
+                        if (item.PreventDuplicates)
+                        {
+                            partitionByCode = $"ROW_NUMBER() OVER ( PARTITION BY {item.sourceColumn} ORDER BY {item.sourceColumn} DESC) AS rc FROM {obj.sourceTableName}) a";
+                        }
+                    }
+                }
+                subQuerySql = $"{subQuerySql} {partitionByCode}";
+                valuesSql = $"{valuesSql} {subQuerySql}";
+            }
             finalSQL = selectSQl + valuesSql;
             return finalSQL;
         }
@@ -360,6 +389,11 @@ namespace ArmMordanizerGUI.Service
 
         private List<MapTable> GetMapTableInfo(string existingSql)
         {
+            bool containsPartitionBy = false;
+            if (existingSql.Contains("PARTITION BY"))
+            {
+                containsPartitionBy = true;
+            }
             //INSERT INTO MasterCalendar (Date,Year,HolidayType)  SELECT Date, Year, HolidayType FROM MasterCalendar
             List<MapTable> mapTableList = new List<MapTable>();
             string[] data = existingSql.Split(new[] { "SELECT" }, StringSplitOptions.None);
@@ -370,7 +404,16 @@ namespace ArmMordanizerGUI.Service
             desTemp = desTemp[1].Split(new[] { "," }, StringSplitOptions.None);
 
             string[] srcTemp = data[1].Split(new[] { "FROM" }, StringSplitOptions.None);
-            srcTemp = srcTemp[0].Split(new[] { "," }, StringSplitOptions.None);
+            if (containsPartitionBy)
+            {
+                string[] temporary = data[1].Split(new[] { "END AS" }, StringSplitOptions.TrimEntries);
+                temporary[1]=temporary[1].Replace("FROM (", "").Replace("a.","");
+                srcTemp = temporary[1].Split(new[] { "," }, StringSplitOptions.TrimEntries);
+            }
+            else
+            {
+                srcTemp = srcTemp[0].Split(new[] { "," }, StringSplitOptions.None);
+            }
 
             for (int i = 0; i < srcTemp.Length; i++)
             {
@@ -384,7 +427,7 @@ namespace ArmMordanizerGUI.Service
 
         }
 
-        internal Mapper GetMapper(List<SelectListItem> objDestinationList, List<SelectListItem> objSourceList, List<MapTable> objMapTable)
+        internal Mapper GetMapper(List<SelectListItem> objDestinationList, List<SelectListItem> objSourceList, List<MapTable> objMapTable, bool listOnlyUsedColumns)
         {
             List<MapTable> objMapList = new List<MapTable>();
             foreach (var objColumn in objMapTable)
@@ -402,7 +445,7 @@ namespace ArmMordanizerGUI.Service
 
             if (objDestinationList.Count > count)
             {
-                for (int i = 1; i < result.Count; i++)
+                for (int i = 0; i < result.Count; i++)
                 {
                     MapTable mapTable = new MapTable();
                     var sourceColumn = objSourceList.FirstOrDefault(x => x.Text == result[i].Text);
@@ -415,21 +458,115 @@ namespace ArmMordanizerGUI.Service
                     }
                     else
                     {
-                        mapTable.sourceColumn = "";
+                        mapTable.sourceColumn = "<ignore>";
                         mapTable.targetColumn = result[i].Text;
                     }
+
                     //mapTable.sourceColumn = "";
                     //mapTable.targetColumn = "";
                     objMapList.Add(mapTable);
                 }
             }
+            foreach (MapTable mapTable in objMapList)
+            {
+                mapTable.SourceColumns = BuildIndividualSelectList(objMapList, objSourceList, "source", mapTable.sourceColumn, listOnlyUsedColumns);
+
+                mapTable.TargetColumns = BuildIndividualSelectList(objMapList, objDestinationList, "destination", mapTable.targetColumn, listOnlyUsedColumns);
+
+            }
+
+
             //objMapList.RemoveAt(objMapList.Count - 1);
             Mapper mapper = new Mapper();
+
+            //These should no longer be used 
             mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
             mapper.desTinationSelectList = new SelectList(objDestinationList, "Text", "Value");
+
             mapper.mapTables = objMapList;
 
             return mapper;
+        }
+
+        private SelectList? BuildIndividualSelectList(List<MapTable> objMapList, List<SelectListItem> originalSelectListItems, string fieldType, string? currentField, bool listOnlyUsedColumns)
+        {
+            SelectList? selectList = null;
+            List<SelectListItem>? selectListItems = new List<SelectListItem>();
+            //Make ignore at the top of the list
+            SelectListItem selectListItemIgnore = new SelectListItem() { Text = "<ignore>", Value = "<ignore>" };
+            selectListItems.Add(selectListItemIgnore);
+
+            if ((currentField?.Trim() != "<ignore>" || listOnlyUsedColumns == false)) //Add list item for the current field
+            {
+                SelectListItem? selectListItem = originalSelectListItems.FirstOrDefault(f => f.Text == currentField);
+                if (selectListItem?.Text != null) { selectListItems.Add(selectListItem); }
+            }
+            foreach (var item in originalSelectListItems)
+            {
+                MapTable? mapTable = null;
+                if (fieldType == "source")
+                {
+                    mapTable = objMapList.FirstOrDefault(f => f.sourceColumn == item.Text);
+                }
+                else if (fieldType == "destination")
+                {
+                    mapTable = objMapList.FirstOrDefault(f => f.targetColumn == item.Text);
+                }
+                if ((mapTable == null && item.Text.Length > 0 && item.Text != "<ignore>") || (listOnlyUsedColumns == false && item.Text != "<ignore>")) //Only include if not already selected in the mapping
+                {
+                    item.Value = item.Text;
+                    selectListItems.Add(item);
+                }
+            }
+            selectList = new SelectList(selectListItems, "Text", "Value");
+            return selectList;
+        }
+        public bool HasDuplicates<T>(List<T> listToTest)
+        {
+            var hashSet = new HashSet<T>();
+
+            for (var i = 0; i < listToTest.Count; ++i)
+            {
+                if (!hashSet.Add(listToTest[i])) return true;
+            }
+            return false;
+        }
+
+        public string CheckForDuplicates(List<MapTable> mapTables)
+        {
+            string result = "";
+            List<string> sourceFields = new List<string>();
+            foreach (var mapTable in mapTables)
+            {
+                string sourceField = mapTable.sourceColumn ?? "";
+                if (sourceField != "<ignore>")
+                {
+                    sourceFields.Add(sourceField);
+                }
+            }
+            if (HasDuplicates(sourceFields))
+            {
+                result = $"{result} Duplicates found in the source columns!".Trim();
+            }
+            sourceFields = new List<string>();
+            foreach (var mapTable in mapTables)
+            {
+                string destinationColumn = mapTable.targetColumn ?? "";
+                if (destinationColumn != "<ignore>")
+                {
+                    sourceFields.Add(destinationColumn);
+                }
+            }
+            if (HasDuplicates(sourceFields))
+            {
+                result = $"{result} Duplicates found in the destination columns!".Trim();
+            }
+            if (result != "")
+            {
+                result = $"{result} Saving has been aborted!".Trim();
+
+            }
+            return result;
         }
     }
 }

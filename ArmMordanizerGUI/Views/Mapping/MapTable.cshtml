@@ -2,28 +2,45 @@
 
 @if (TempData["message"] != null)
 {
-    <script>alert('@TempData["message"]');</script>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>@TempData["message"].ToString().Substring(0,24)</strong>
+
+        <div  class="m-4">
+            <textarea style="width:100%" rows="10" class="form-control">@TempData["message"].ToString().Substring( 25 )</textarea>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 }
-<form method="post">
+<form method="post" id="mapping-form">
     <div class="row pt-12" style="padding-bottom:10px; padding-top:10px;">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <label class="text-primary">Select Source Table</label>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-7">
                     @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-select",onchange="SourceSelectedIndexChanged()"})
                 </div>
                 <input type="hidden" id="HiddenSourceTableName" name="HiddenSourceTableName" />
-
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-10">
+                    <label class="text-primary">List Only Used Columns</label>
+                </div>
+                <div class="col-md-2">
+                    <input type="checkbox" name="ListOnlyUsedColumns" id="ListOnlyUsedColumns" checked onchange="SelectedIndexChanged()" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="row">
+                <div class="col-md-5">
                     <label class="text-primary">Select Destination Table</label>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-7">
                     @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-select",@disabled="disabled" ,onchange = "SelectedIndexChanged()" })
 
                     @* @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "document.location.href = '/Mapping/DestinationTableddlChange?obj=' + m;" })
@@ -57,7 +74,7 @@
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        </div>
+    </div>
     <div id="mypartial"> </div>
 
 
@@ -84,13 +101,16 @@
 
     }
     function SelectedIndexChanged() {
-        $('#loading').removeClass('hidden');
+
         var url = "@Url.Action("ShowSampleData","Mapping")";
 
         var model = {
             tableName: document.getElementById("destinationTableName").value
         };
-
+        if (model.tableName == undefined || model.tableName == "") {
+            return;
+        }
+        $('#loading').removeClass('hidden');
         $.post(url, model, function (res) {
             console.log(res);
             $("#sample-data-destination").html(res);
@@ -98,10 +118,11 @@
 
 
         var url = "@Url.Action("MapPartial","Mapping")";
-
+        var listOnlyUsed = $('#ListOnlyUsedColumns').prop('checked');
         var model = {
             SrcTableName: document.getElementById("sourceTableName").value,
-            DesTableName: document.getElementById("destinationTableName").value
+            DesTableName: document.getElementById("destinationTableName").value,
+            listOnlyUsedColumns: listOnlyUsed
         };
 
         $.post(url, model, function (res) {
@@ -117,6 +138,27 @@
         $("#collapse-area").removeClass("collapse")
     }
     function SourceFieldNameChanged(id) {
+        var model = {
+            SrcTableName: document.getElementById("sourceTableName").value,
+            DesTableName: document.getElementById("destinationTableName").value
+        };
+
+        //$('#ReloadPartial').val('yes');
+
+
+        //$("#mapping-form").submit();
+        //$('#ReloadPartial').val('no');
+
+        //var delayInMilliseconds = 9000; //1 second
+        //setTimeout(function () {
+        //    var url = "@Url.Action("MapPartial","Mapping")";
+        //    $.post(url, model, function (res) {
+        //        $("#mypartial").html(res);
+        //        $('#loading').addClass('hidden');
+        //    });
+        //}, delayInMilliseconds);
+
+
         var url = "@Url.Action("ValidateColumns","Mapping")";
 
         var model = {
@@ -133,5 +175,4 @@
         });
 
     }
-
 </script>
