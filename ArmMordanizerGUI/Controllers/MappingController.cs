@@ -63,8 +63,8 @@ namespace ArmMordanizerGUI.Controllers
                     msg = _mapperData.Save(obj);
                 }
 
-                _mapperData.MoveFileToReUpload(obj.sourceTableName);
-                obj.destinationTableName = "dbo.Stock";
+                //_mapperData.MoveFileToReUpload(obj.sourceTableName);
+                //obj.destinationTableName = "dbo.Stock";
 
                 TempData["message"] = msg;
 

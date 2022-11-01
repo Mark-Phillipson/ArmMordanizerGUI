@@ -5,7 +5,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>C:\Users\MPhil\source\repos\ArmMordanizerGUI\ArmMordanizerGUI\bin\Release\net6.0\publish\</_PublishTargetUrl>
-    <History>True|2022-10-12T09:05:28.0991840Z;True|2022-10-11T16:41:23.1565841+01:00;True|2022-09-30T12:16:56.0457780+01:00;</History>
+    <History>True|2022-11-01T09:46:49.6272697Z;True|2022-11-01T09:29:09.2644034+00:00;True|2022-10-12T10:05:28.0991840+01:00;True|2022-10-11T16:41:23.1565841+01:00;True|2022-09-30T12:16:56.0457780+01:00;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>
