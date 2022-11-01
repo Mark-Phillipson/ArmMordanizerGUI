@@ -13,16 +13,17 @@ namespace ArmMordanizerGUI.Service
     public class MapperData
     {
         private IConfiguration Configuration;
+        private readonly DatabaseMetaDataService _databaseMetaDataService;
         private string fileLocationForReUploadPropertyName = "ReUpload";
         private string fileLocationForUpload = "UploadQueue";
         private string fileLocationForUploadCompleted = "UploadCompletePath";
 
-        public MapperData(IConfiguration _configuration)
+        public MapperData(IConfiguration _configuration, DatabaseMetaDataService databaseMetaDataService)
         {
             Configuration = _configuration;
-
+            _databaseMetaDataService = databaseMetaDataService;
         }
-        internal Mapper GetMapper(List<SelectListItem> objDestinationList1, List<SelectListItem> objSourceList, bool listOnlyUsedColumns)
+        internal Mapper GetMapper(List<SelectListItem> objDestinationList1, List<SelectListItem> objSourceList, bool listOnlyUsedColumns, string sourceTablename, string destinationTablename)
         {
             List<MapTable> objMapList = new List<MapTable>();
             foreach (var objColumn in objDestinationList1)
@@ -49,8 +50,8 @@ namespace ArmMordanizerGUI.Service
             Mapper mapper = new Mapper();
             mapper.sourceSelectList = new SelectList(objSourceList, "Text", "Value");
             mapper.desTinationSelectList = new SelectList(objDestinationList1, "Text", "Value");
-            mapper.mapTables = objMapList;
-
+            var mapTableList = GetDataTypesForMapTables(objMapList, sourceTablename, destinationTablename);
+            mapper.mapTables = mapTableList;
             return mapper;
         }
 
@@ -63,7 +64,7 @@ namespace ArmMordanizerGUI.Service
                 SqlConnection con = new SqlConnection(connString);
 
                 string sql = GetQuery(obj);
-                string insertSql = "INSERT INTO [MapperConfiguration] ([SourceTable],[DestinationTable],[SQL],[IsActive],[CreatedDate]) VALUES (@SourceTable,@DestinationTable,@SQL,@IsActive,@CreatedDate)";
+                string insertSql = "INSERT INTO [MapperConfiguration] ([SourceTable],[DestinationTable],[SQL],[IsActive],[PurgeBeforeInsert],[CreatedDate]) VALUES (@SourceTable,@DestinationTable,@SQL,@IsActive,@PurgeBeforeInsert,@CreatedDate)";
 
                 using (SqlCommand cmd = new SqlCommand(insertSql, con))
                 {
@@ -71,6 +72,8 @@ namespace ArmMordanizerGUI.Service
                     cmd.Parameters.AddWithValue("@DestinationTable", obj.destinationTableName);
                     cmd.Parameters.AddWithValue("@SQL", sql);
                     cmd.Parameters.AddWithValue("@IsActive", 1);
+                    cmd.Parameters.AddWithValue("@PurgeBeforeInsert", obj.PurgeBeforeInsert);
+
                     cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
                     //cmd.Parameters.AddWithValue("@UpdatedDate", null);
 
@@ -257,7 +260,7 @@ namespace ArmMordanizerGUI.Service
             string connString = this.Configuration.GetConnectionString("DefaultConnection");
             string updateSql = "UPDATE MapperConfiguration SET IsActive = 0,UpdatedDate= @UpdatedDate WHERE SourceTable = @SourceTable AND DestinationTable = @DestinationTable";
             string sql = GetQuery(obj);
-            string insertSql = "INSERT INTO [MapperConfiguration] ([SourceTable],[DestinationTable],[SQL],[IsActive],[CreatedDate]) VALUES (@SourceTable,@DestinationTable,@SQL,@IsActive,@CreatedDate)";
+            string insertSql = "INSERT INTO [MapperConfiguration] ([SourceTable],[DestinationTable],[SQL],[IsActive],[PurgeBeforeInsert],[CreatedDate]) VALUES (@SourceTable,@DestinationTable,@SQL,@IsActive,@PurgeBeforeInsert,@CreatedDate)";
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
@@ -270,8 +273,8 @@ namespace ArmMordanizerGUI.Service
                     {
                         cmd.Parameters.AddWithValue("@SourceTable", obj.sourceTableName);
                         cmd.Parameters.AddWithValue("@DestinationTable", obj.destinationTableName);
+                        cmd.Parameters.AddWithValue("@PurgeBeforeInsert", obj.PurgeBeforeInsert);
                         cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
-
                         cmd.ExecuteNonQuery();
                     }
                     using (SqlCommand cmd = new SqlCommand(insertSql, conn, transaction))
@@ -280,8 +283,8 @@ namespace ArmMordanizerGUI.Service
                         cmd.Parameters.AddWithValue("@DestinationTable", obj.destinationTableName);
                         cmd.Parameters.AddWithValue("@SQL", sql);
                         cmd.Parameters.AddWithValue("@IsActive", 1);
+                        cmd.Parameters.AddWithValue("@PurgeBeforeInsert", obj.PurgeBeforeInsert);
                         cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
-
                         cmd.ExecuteNonQuery();
                     }
                     transaction.Commit();
@@ -293,8 +296,8 @@ namespace ArmMordanizerGUI.Service
                     // Attempt to roll back the transaction.
                     try
                     {
+                        transaction?.Rollback();
                         return "Database Insertion failed. Please See the exception Message" + ex.Message.ToString();
-                        transaction.Rollback();
                     }
                     catch (Exception ex2)
                     {
@@ -384,7 +387,7 @@ namespace ArmMordanizerGUI.Service
                     dataTable.Load(sqlDataReader);
                 DataRow row = dataTable.Rows[0];
                 existingSql = row.Field<string>("SQL") ?? "";
-                list = GetMapTableInfo(existingSql);
+                list = GetMapTableInfo(existingSql, srcTableName, desTableName);
                 bool purgeBeforeInsert = row.Field<bool>("PurgeBeforeInsert");
                 con.Close();
                 return (list, purgeBeforeInsert);
@@ -392,18 +395,17 @@ namespace ArmMordanizerGUI.Service
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                throw ;
+                throw;
             }
         }
 
-        private List<MapTable> GetMapTableInfo(string existingSql)
+        private List<MapTable> GetMapTableInfo(string existingSql, string sourceTablename, string destinationTablename)
         {
             bool containsPartitionBy = false;
             if (existingSql.Contains("PARTITION BY"))
             {
                 containsPartitionBy = true;
             }
-            //INSERT INTO MasterCalendar (Date,Year,HolidayType)  SELECT Date, Year, HolidayType FROM MasterCalendar
             List<MapTable> mapTableList = new List<MapTable>();
             string[] data = existingSql.Split(new[] { "SELECT" }, StringSplitOptions.None);
 
@@ -444,9 +446,29 @@ namespace ArmMordanizerGUI.Service
                 }
                 mapTableList.Add(obj);
             }
+            mapTableList = GetDataTypesForMapTables(mapTableList, sourceTablename, destinationTablename);
 
             return mapTableList;
 
+        }
+
+        private List<MapTable> GetDataTypesForMapTables(List<MapTable> mapTableList, string sourceTablename, string destinationTablename)
+        {
+            var sourceColumns = _databaseMetaDataService.GetColumnNamesFromSql($"SELECT * FROM {sourceTablename}", sourceTablename);
+
+            var destinationColumns = _databaseMetaDataService.GetColumnNamesFromSql($"SELECT * FROM {destinationTablename}", destinationTablename);
+            if (sourceColumns== null ||destinationColumns==  null )
+            {
+                throw new Exception(" cannot find columns! ");
+            }
+            foreach (var mapTable in mapTableList)
+            {
+                var sourceColumn = sourceColumns.FirstOrDefault(f => f.ColumnName == mapTable.sourceColumn);
+                mapTable.SourceColumnType = sourceColumn?.DataType;
+                var destinationColumn = destinationColumns.FirstOrDefault(f => f.ColumnName == mapTable.targetColumn);
+                mapTable.TargetColumnType = destinationColumn?.DataType;
+            }
+            return mapTableList;
         }
 
         internal Mapper GetMapper(List<SelectListItem> objDestinationList, List<SelectListItem> objSourceList, List<MapTable> objMapTable, bool listOnlyUsedColumns)
@@ -458,6 +480,8 @@ namespace ArmMordanizerGUI.Service
                 mapTable.sourceColumn = objColumn.sourceColumn;
                 mapTable.targetColumn = objColumn.targetColumn;
                 mapTable.PreventDuplicates = objColumn.PreventDuplicates;
+                mapTable.SourceColumnType = objColumn.SourceColumnType;
+                mapTable.TargetColumnType=objColumn.TargetColumnType;
                 objMapList.Add(mapTable);
             }
             int count = objMapList.Count;

@@ -15,22 +15,22 @@
     <div class="row pt-12" style="padding-bottom:10px; padding-top:10px;">
         <div class="col-md-4">
             <div class="row">
-                <div class="col-md-5">
+                <div class="col-md-2">
                     <label class="text-primary">Source</label>
                 </div>
-                <div class="col-md-7">
+                <div class="col-md-10">
                     @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.sourcetableSelectList, "Text", "Value"),"Select Source Table",new {@class="form-select",onchange="SourceSelectedIndexChanged()"})
                 </div>
                 <input type="hidden" id="HiddenSourceTableName" name="HiddenSourceTableName" />
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-4">
             <div title="List Only Used Columns in the drop-downs" class="row">
                 <div class="col-md-10">
-                    <label class="text-primary">List Only Used</label>
+                    <label class="text-primary">List Only Unused Columns</label>
                 </div>
                 <div class="col-md-2">
-                    <input type="checkbox" name="ListOnlyUsedColumns" id="ListOnlyUsedColumns" checked onchange="SelectedIndexChanged()"/>
+                    <input type="checkbox" name="ListOnlyUnusedColumns" id="ListOnlyUnusedColumns" checked onchange="SelectedIndexChanged()"/>
                 </div>
             </div>
         </div>
@@ -41,26 +41,10 @@
                     <label class="text-primary">Destination</label>
                 </div>
                 <div class="col-md-7">
-                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Source Table",new {@class = "form-select",@disabled="disabled" ,onchange = "SelectedIndexChanged()" })
-
-                    @* @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "document.location.href = '/Mapping/DestinationTableddlChange?obj=' + m;" })
-                    @Html.DropDownListFor(m=>m.sourceTableName, new SelectList(Model.desTinationTableSelectList),"Select Destination Table",new {@class = "form-control", onchange = "SelectedIndexChanged" })
-                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Destination Table")*@
-
+                    @Html.DropDownListFor(m=>m.destinationTableName, new SelectList(Model.desTinationTableSelectList, "Text", "Value"),"Select Destination Table",new {@class = "form-select",@disabled="disabled" ,onchange = "SelectedIndexChanged()" })
                 </div>
             </div>
         </div>
-
-        @*        <div class="col-md-6">
-        <div class="row">
-        <div class="col-md-4">
-        <label class="text-primary">Select Re Use Option</label>
-        </div>
-        <div class="col-md-8">
-        @Html.DropDownListFor(m=>m.reUseValue, new SelectList(Model.reUseConfiguration, "Text", "Value"),new {@class = "form-control", onchange = "SelectedIndexChanged()" })
-        </div>
-        </div>
-        </div>*@
     </div>
     <div id="main-element" class="hidden">
         <strong> Sample of Data</strong>
@@ -71,13 +55,13 @@
             <div id="sample-data-destination"> </div>
         </div>
     </div>
+    <div id="mypartial"> </div>
+
     <div id="loading" class="hidden">
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-    <div id="mypartial"> </div>
-
 
 
 </form>
@@ -119,11 +103,11 @@
 
 
         var url = "@Url.Action("MapPartial","Mapping")";
-        var listOnlyUsed = $('#ListOnlyUsedColumns').prop('checked');
+        var listOnlyUnused = $('#ListOnlyUnusedColumns').prop('checked');
         var model = {
             SrcTableName: document.getElementById("sourceTableName").value,
             DesTableName: document.getElementById("destinationTableName").value,
-            listOnlyUsedColumns: listOnlyUsed
+            listOnlyUnusedColumns: listOnlyUnused
         };
 
         $.post(url, model, function (res) {
@@ -143,23 +127,6 @@
             SrcTableName: document.getElementById("sourceTableName").value,
             DesTableName: document.getElementById("destinationTableName").value
         };
-
-        //$('#ReloadPartial').val('yes');
-
-
-        //$("#mapping-form").submit();
-        //$('#ReloadPartial').val('no');
-
-        //var delayInMilliseconds = 9000; //1 second
-        //setTimeout(function () {
-        //    var url = "@Url.Action("MapPartial","Mapping")";
-        //    $.post(url, model, function (res) {
-        //        $("#mypartial").html(res);
-        //        $('#loading').addClass('hidden');
-        //    });
-        //}, delayInMilliseconds);
-
-
         var url = "@Url.Action("ValidateColumns","Mapping")";
 
         var model = {
@@ -174,6 +141,8 @@
 
             $("#status" + id).html(res);
         });
-
+    }
+    function ShowSpinner(){
+        $('#loading').removeClass('hidden');
     }
 </script>

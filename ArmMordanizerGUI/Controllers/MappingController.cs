@@ -26,7 +26,7 @@ namespace ArmMordanizerGUI.Controllers
             _db = db;
             Configuration = _configuration;
             _databaseMetaDataService = databaseMetaDataService;
-            _mapperData = new MapperData(_configuration);
+            _mapperData = new MapperData(_configuration,databaseMetaDataService);
             _sourceData = new SourceData(_configuration);
             _destinationData = new DestinationData(_configuration);
         }
@@ -110,7 +110,7 @@ namespace ArmMordanizerGUI.Controllers
 
         }
 
-        public IActionResult MapPartial(string SrcTableName, string desTableName, bool listOnlyUsedColumns)
+        public IActionResult MapPartial(string SrcTableName, string desTableName, bool listOnlyUnusedColumns)
         {
             Mapper mapper = new Mapper();
             List<SelectListItem> objDestinationList = _destinationData.GetDestinationData(desTableName);
@@ -122,15 +122,16 @@ namespace ArmMordanizerGUI.Controllers
 
             if (!isExists)
             {
-                TempData["message"] = null;
-                mapper = _mapperData.GetMapper(objDestinationList, objSourceList, listOnlyUsedColumns);
+                TempData["message"] = "Created new Mapping Configuration from scratch.";
+                mapper = _mapperData.GetMapper(objDestinationList, objSourceList, listOnlyUnusedColumns,SrcTableName,desTableName);
                 mapper.sourceTableName = SrcTableName;
                 mapper.destinationTableName = desTableName;
             }
             else
             {
+                TempData["message"] = " Loaded from, previously saved, Mapping Configuration";
                 (List<MapTable> objMapTable, bool purgeBeforeInsert) = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
-                mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable, listOnlyUsedColumns);
+                mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable, listOnlyUnusedColumns);
                 mapper.sourceTableName = SrcTableName;
                 mapper.destinationTableName = desTableName;
                 mapper.PurgeBeforeInsert = purgeBeforeInsert;
