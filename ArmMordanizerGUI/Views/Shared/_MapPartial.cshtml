@@ -5,8 +5,8 @@
 
 @Html.Hidden("HiddenId",Model.mapTables.Count)
 @Html.Hidden("HiddenId2","")
-<div class="row m-1">
-    <div class="col-md-8">
+<div class="row mt-1">
+    <div class="col-md-5"">
         @if (TempData["message"] != null)
         {
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -16,6 +16,12 @@
         }
     </div>
     <div class="col-md-4">
+        <div class="" id="duplicates-sort-by">
+            <label class="label-control">Duplicates Sort By</label>
+            @Html.DropDownListFor(m=>m.DuplicatesSortBy, new SelectList(Model.sourceSelectList, "Text", "Value"),"Select Column",new {@class="form-select"})
+        </div>
+    </div>
+    <div class="col-md-3">
         <div title="Tick the box if you wish to remove records in the destination table before appending new ones." class="row">
             <div class="col-md-10">
                 <label class="text-primary">Purge Before Insert</label>
@@ -61,6 +67,7 @@
                         @if (Model.mapTables[i].TargetColumnType?.ToLower() == "nvarchar" && Model.mapTables[i].sourceColumn != "<ignore>")
                         {
                             @Html.CheckBoxFor(m => m.mapTables[i].PreventDuplicates, new {@class="prevent-duplicates"})
+
                         }
                     </td>
                 </tr>

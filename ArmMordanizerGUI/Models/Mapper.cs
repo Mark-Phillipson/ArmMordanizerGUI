@@ -16,5 +16,6 @@ namespace ArmMordanizerGUI.Models
         public int reUseValue { get; set; }
         public bool ReloadPartial { get; set; } = false;
         public bool PurgeBeforeInsert { get; set; } = true;
+        public string? DuplicatesSortBy { get; set; }
     }
 }

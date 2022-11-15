@@ -104,7 +104,6 @@ namespace ArmMordanizerGUI.Controllers
                 ViewBag.Columns = columns.ToList();
             }
             ViewBag.TableName = tableName;
-            //return Content("<h1> Testing</h1>");
             var result = PartialView("~/Views/Shared/_SampleData.cshtml", dataTable);
             return result;
 
@@ -130,11 +129,12 @@ namespace ArmMordanizerGUI.Controllers
             else
             {
                 TempData["message"] = " Loaded from, previously saved, Mapping Configuration";
-                (List<MapTable> objMapTable, bool purgeBeforeInsert) = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
+                (List<MapTable> objMapTable, bool purgeBeforeInsert, string sortBy) = _mapperData.GetConfiguarationData(SrcTableName, desTableName);
                 mapper = _mapperData.GetMapper(objDestinationList, objSourceList, objMapTable, listOnlyUnusedColumns);
                 mapper.sourceTableName = SrcTableName;
                 mapper.destinationTableName = desTableName;
                 mapper.PurgeBeforeInsert = purgeBeforeInsert;
+                mapper.DuplicatesSortBy = sortBy;
             }
             var mapTables = mapper.mapTables;
             foreach (MapTable item in mapTables)

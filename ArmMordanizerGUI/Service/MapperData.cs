@@ -345,12 +345,18 @@ namespace ArmMordanizerGUI.Service
             {
                 foreach (var item in obj.mapTables)
                 {
+                    string? duplicatesSortBy = obj.DuplicatesSortBy;
+                    if (duplicatesSortBy == null)
+                    {
+                        duplicatesSortBy = item.sourceColumn;
+                    }
+
                     if (item.targetColumn != null && item.sourceColumn != null && item.targetColumn != "<ignore>" && item.sourceColumn != "<ignore>")
                     {
                         subQuerySql = $"{subQuerySql} {item.sourceColumn},";
                         if (item.PreventDuplicates)
                         {
-                            partitionByCode = $"ROW_NUMBER() OVER ( PARTITION BY {item.sourceColumn} ORDER BY {item.sourceColumn} DESC) AS rc FROM {obj.sourceTableName}) a";
+                            partitionByCode = $"ROW_NUMBER() OVER ( PARTITION BY [{item.sourceColumn}] ORDER BY [{duplicatesSortBy}] DESC) AS rc FROM {obj.sourceTableName}) a";
                         }
                     }
                 }
@@ -361,7 +367,7 @@ namespace ArmMordanizerGUI.Service
             return finalSQL;
         }
 
-        public (List<MapTable>, bool PurgeBeforeInsert) GetConfiguarationData(string srcTableName, string desTableName)
+        public (List<MapTable>, bool PurgeBeforeInsert, string sortBy) GetConfiguarationData(string srcTableName, string desTableName)
         {
             List<MapTable> list = new List<MapTable>();
             try
@@ -387,10 +393,11 @@ namespace ArmMordanizerGUI.Service
                     dataTable.Load(sqlDataReader);
                 DataRow row = dataTable.Rows[0];
                 existingSql = row.Field<string>("SQL") ?? "";
-                list = GetMapTableInfo(existingSql, srcTableName, desTableName);
+                string sortBy = "";
+                (list,sortBy) = GetMapTableInfo(existingSql, srcTableName, desTableName);
                 bool purgeBeforeInsert = row.Field<bool>("PurgeBeforeInsert");
                 con.Close();
-                return (list, purgeBeforeInsert);
+                return (list, purgeBeforeInsert,sortBy);
             }
             catch (Exception ex)
             {
@@ -399,7 +406,7 @@ namespace ArmMordanizerGUI.Service
             }
         }
 
-        private List<MapTable> GetMapTableInfo(string existingSql, string sourceTablename, string destinationTablename)
+        private (List<MapTable>, string sortBy) GetMapTableInfo(string existingSql, string sourceTablename, string destinationTablename)
         {
             bool containsPartitionBy = false;
             if (existingSql.Contains("PARTITION BY"))
@@ -415,6 +422,7 @@ namespace ArmMordanizerGUI.Service
             desTemp = desTemp[1].Split(new[] { "," }, StringSplitOptions.None);
             int count = 0;
             string[] srcTemp = data[1].Split(new[] { "FROM" }, StringSplitOptions.None);
+            string sortBy = "";
             if (containsPartitionBy)
             {
                 var fields = "";
@@ -425,6 +433,10 @@ namespace ArmMordanizerGUI.Service
                 fields = $"{fields}{temporary2[1]}";
                 fields = fields.Replace("FROM (", "").Replace("a.", "");
                 srcTemp = fields.Split(new[] { "," }, StringSplitOptions.TrimEntries);
+                string[] sortByTemp=data[2].Split(new[] { "] ORDER BY [" },StringSplitOptions.TrimEntries);
+                sortByTemp = sortByTemp[1].Split(new[] { "] DESC) AS" }, StringSplitOptions.TrimEntries);
+                 sortBy=sortByTemp[0];
+                
             }
             else
             {
@@ -448,7 +460,7 @@ namespace ArmMordanizerGUI.Service
             }
             mapTableList = GetDataTypesForMapTables(mapTableList, sourceTablename, destinationTablename);
 
-            return mapTableList;
+            return (mapTableList,sortBy);
 
         }
 
